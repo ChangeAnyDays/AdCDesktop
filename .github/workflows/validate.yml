@@ -1,0 +1,43 @@
+name: Validate source and build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7, verified from the official tag
+        with:
+          persist-credentials: false
+      - name: Review publishable files
+        run: .\scripts\Test-Publish.ps1
+      - name: Test the publish review gate
+        run: .\tests\Test-PublishGate.ps1
+      - name: Validate installation scripts without installing
+        run: .\tests\Test-Scripts.ps1
+      - name: Test startup checks without launching components
+        run: .\tests\Test-StartupPreflight.ps1
+      - name: Test offline installation with fake components
+        run: .\tests\Test-Install.ps1
+      - name: Build the control panel
+        run: .\scripts\Build-ControlPanel.ps1
+      - name: Run isolated backend and WPF fixture tests
+        run: .\tests\Test-ControlPanel.ps1 -SkipBuild
+      - name: Upload original control panel build
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7, verified from the official tag
+        with:
+          name: AdCDesktop-windows
+          path: artifacts/control-panel/
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,31 @@
+﻿[CmdletBinding()]
+param([switch]$SkipPlan)
+
+$ErrorActionPreference = 'Stop'
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
+$scriptFiles = @(Get-ChildItem -LiteralPath $repositoryRoot -Recurse -File -Force | Where-Object {
+    $_.Extension -in @('.ps1','.psm1') -and $_.FullName.Substring($repositoryRoot.Length+1) -notmatch '(?:^|[\\/])(?:\.git|\.artifacts|artifacts|bin|obj)[\\/]'
+})
+if ($scriptFiles.Count -eq 0) { throw 'No PowerShell source files were found.' }
+$errors = New-Object 'System.Collections.Generic.List[string]'
+foreach ($scriptFile in $scriptFiles) {
+    $tokens = $null; $parseErrors = $null
+    [void][Management.Automation.Language.Parser]::ParseFile($scriptFile.FullName,[ref]$tokens,[ref]$parseErrors)
+    foreach ($parseError in $parseErrors) { $errors.Add($scriptFile.Name + ': ' + $parseError.Message) }
+    $bytes = [IO.File]::ReadAllBytes($scriptFile.FullName)
+    $text = [Text.Encoding]::UTF8.GetString($bytes)
+    if ($text -match '[\u3400-\u9fff]' -and !($bytes.Length -ge 3 -and $bytes[0] -eq 0xef -and $bytes[1] -eq 0xbb -and $bytes[2] -eq 0xbf)) {
+        $errors.Add($scriptFile.Name + ': Chinese PowerShell source needs UTF-8 BOM for Windows PowerShell 5.1.')
+    }
+}
+if ($errors.Count -gt 0) { throw ($errors -join [Environment]::NewLine) }
+
+if (!$SkipPlan) {
+    $installScript = Join-Path $repositoryRoot 'Install.ps1'
+    if (!(Test-Path -LiteralPath $installScript)) { throw 'Install.ps1 is missing.' }
+    $planRoot = Join-Path $PSScriptRoot ('.artifacts\whatif-' + [Guid]::NewGuid().ToString('N'))
+    & $installScript -InstallDir $planRoot -Mode ControlPanel -WhatIf
+    if (Test-Path -LiteralPath $planRoot) { throw 'WhatIf unexpectedly created the installation directory.' }
+}
+if ($SkipPlan) { Write-Output ("PASS: {0} PowerShell files parsed (syntax-only mode)." -f $scriptFiles.Count) }
+else { Write-Output ("PASS: {0} PowerShell files parsed; installation plan did not change the machine." -f $scriptFiles.Count) }

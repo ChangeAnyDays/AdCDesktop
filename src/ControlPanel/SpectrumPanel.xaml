@@ -1,0 +1,140 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Title="AdC桌面美化" Width="1080" Height="840" MinWidth="940" MinHeight="650"
+        WindowStartupLocation="CenterScreen" Background="#0B1423" Foreground="#EAF2FF"
+        FontFamily="Microsoft YaHei UI" FontSize="13" UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+  <Window.Resources>
+    <SolidColorBrush x:Key="Muted" Color="#8DA3BE"/>
+    <Style TargetType="Button">
+      <Setter Property="Background" Value="#1E3049"/><Setter Property="Foreground" Value="#DCEBFF"/>
+      <Setter Property="BorderBrush" Value="#324B68"/><Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="14,9"/><Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+          <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="#6AA7CB"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.75"/></Trigger>
+          <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Chrome" Property="Opacity" Value="0.4"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="#54D8DF"/><Setter Property="Foreground" Value="#09262F"/>
+      <Setter Property="BorderBrush" Value="#54D8DF"/><Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style TargetType="TextBox">
+      <Setter Property="Background" Value="#0E1A2D"/><Setter Property="Foreground" Value="#EDF5FF"/>
+      <Setter Property="BorderBrush" Value="#344C68"/><Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="7,5"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="SelectionBrush" Value="#267991"/><Setter Property="CaretBrush" Value="#FFFFFF"/>
+    </Style>
+    <Style TargetType="CheckBox">
+      <Setter Property="Foreground" Value="#C9D9ED"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style TargetType="Slider">
+      <Setter Property="Height" Value="24"/><Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider">
+        <Grid Margin="1,0">
+          <Track x:Name="PART_Track" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value}" IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+            <Track.DecreaseRepeatButton><RepeatButton Command="Slider.DecreaseLarge" Focusable="False">
+              <RepeatButton.Template><ControlTemplate><Border Height="4" CornerRadius="2" Background="#55C9DC" VerticalAlignment="Center"/></ControlTemplate></RepeatButton.Template>
+            </RepeatButton></Track.DecreaseRepeatButton>
+            <Track.Thumb><Thumb Width="15" Height="24"><Thumb.Template><ControlTemplate><Border Width="14" Height="14" CornerRadius="7" Background="#B5F5F3" BorderBrush="#6BCEDD" BorderThickness="2" VerticalAlignment="Center"/></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
+            <Track.IncreaseRepeatButton><RepeatButton Command="Slider.IncreaseLarge" Focusable="False">
+              <RepeatButton.Template><ControlTemplate><Border Height="4" CornerRadius="2" Background="#2E425D" VerticalAlignment="Center"/></ControlTemplate></RepeatButton.Template>
+            </RepeatButton></Track.IncreaseRepeatButton>
+          </Track>
+        </Grid>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="ComboBox">
+      <Setter Property="Foreground" Value="#122036"/><Setter Property="Background" Value="#DDE8F5"/>
+      <Setter Property="Padding" Value="8,6"/><Setter Property="MinHeight" Value="30"/>
+    </Style>
+  </Window.Resources>
+  <Grid Background="#0B1423"><Grid Margin="26,20,26,18">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Grid Margin="0,0,0,19">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <StackPanel>
+        <StackPanel Orientation="Horizontal">
+          <Border Width="38" Height="38" CornerRadius="11" Background="#163A50" Margin="0,0,12,0">
+            <Path Data="M 8,20 L 12,20 15,10 19,29 23,14 26,22 31,22" Stroke="#72E8EB" StrokeThickness="2.5" StrokeLineJoin="Round"/>
+          </Border>
+          <TextBlock Text="AdC桌面美化" FontSize="26" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        </StackPanel>
+        <TextBlock Text="颜色、动效与位置，在这里轻松调整。" Foreground="{StaticResource Muted}" Margin="50,5,0,0"/>
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <Border Background="#102C32" CornerRadius="15" Padding="11,6" Margin="0,0,10,0">
+          <StackPanel Orientation="Horizontal"><Ellipse x:Name="StatusDot" Fill="#60E2AF" Width="7" Height="7" Margin="0,0,7,0"/><TextBlock x:Name="RuntimeStatus" Text="正在读取状态" Foreground="#93DECB" FontSize="12"/></StackPanel>
+        </Border>
+        <Button x:Name="StartButton" Content="启动组件" Padding="12,6" Visibility="Collapsed" AutomationProperties.AutomationId="StartComponent"/>
+      </StackPanel>
+    </Grid>
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="348"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel>
+        <Border CornerRadius="16" Background="#112237" BorderBrush="#213851" BorderThickness="1" Padding="18" Margin="0,0,0,16">
+          <StackPanel>
+            <DockPanel Margin="0,0,0,14"><TextBlock Text="样式预览" FontSize="15" FontWeight="SemiBold"/><TextBlock DockPanel.Dock="Right" Text="示意动画" Foreground="#708AA9" FontSize="11" HorizontalAlignment="Right"/></DockPanel>
+            <Border CornerRadius="10" Background="#0A1829" BorderBrush="#1B344B" BorderThickness="1" ClipToBounds="True">
+              <Grid Height="196">
+                <Canvas x:Name="PreviewCanvas" ClipToBounds="True"/>
+                <Border x:Name="PreviewHidden" Visibility="Collapsed" Background="#C00A1829"><TextBlock Text="频谱已设为隐藏" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#A1B4CD"/></Border>
+              </Grid>
+            </Border>
+            <TextBlock x:Name="PreviewSize" Text="700 × 60 像素" Foreground="#B3CADE" HorizontalAlignment="Center" Margin="0,13,0,0" FontSize="12"/>
+            <TextBlock Text="实际频谱跟随系统声音变化；静音时保持细线。" TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11" LineHeight="18" Margin="0,8,0,0"/>
+          </StackPanel>
+        </Border>
+        <Border CornerRadius="16" Background="#112237" BorderBrush="#213851" BorderThickness="1" Padding="18">
+          <StackPanel>
+            <TextBlock Text="一键配色" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,13"/>
+            <UniformGrid Columns="2" Rows="2">
+              <Button x:Name="PresetOcean" Tag="ocean" Margin="0,0,5,8" Padding="8,11" AutomationProperties.AutomationId="PresetOcean"><StackPanel><Border Height="5" Width="100" CornerRadius="2" Margin="0,0,0,8"><Border.Background><LinearGradientBrush><GradientStop Color="#12EDF7" Offset="0"/><GradientStop Color="#F50BB9" Offset="1"/></LinearGradientBrush></Border.Background></Border><TextBlock Text="星海霓虹" HorizontalAlignment="Center" FontSize="12"/></StackPanel></Button>
+              <Button x:Name="PresetIce" Tag="ice" Margin="5,0,0,8" Padding="8,11" AutomationProperties.AutomationId="PresetIce"><StackPanel><Border Height="5" Width="100" CornerRadius="2" Margin="0,0,0,8"><Border.Background><LinearGradientBrush><GradientStop Color="#78E7FF" Offset="0"/><GradientStop Color="#4D79FF" Offset="1"/></LinearGradientBrush></Border.Background></Border><TextBlock Text="冰川蓝" HorizontalAlignment="Center" FontSize="12"/></StackPanel></Button>
+              <Button x:Name="PresetSunset" Tag="sunset" Margin="0,0,5,0" Padding="8,11" AutomationProperties.AutomationId="PresetSunset"><StackPanel><Border Height="5" Width="100" CornerRadius="2" Margin="0,0,0,8"><Border.Background><LinearGradientBrush><GradientStop Color="#FFCF70" Offset="0"/><GradientStop Color="#FF6A88" Offset="1"/></LinearGradientBrush></Border.Background></Border><TextBlock Text="落日暖橙" HorizontalAlignment="Center" FontSize="12"/></StackPanel></Button>
+              <Button x:Name="PresetMint" Tag="mint" Margin="5,0,0,0" Padding="8,11" AutomationProperties.AutomationId="PresetMint"><StackPanel><Border Height="5" Width="100" CornerRadius="2" Margin="0,0,0,8"><Border.Background><LinearGradientBrush><GradientStop Color="#4DE2C6" Offset="0"/><GradientStop Color="#85CAFF" Offset="1"/></LinearGradientBrush></Border.Background></Border><TextBlock Text="薄荷清风" HorizontalAlignment="Center" FontSize="12"/></StackPanel></Button>
+            </UniformGrid>
+            <Grid Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><Button x:Name="SavePresetButton" Content="保存我的方案" FontSize="11" Padding="5,8" Margin="0,0,5,0"/><Button x:Name="LoadPresetButton" Grid.Column="1" Content="读取我的方案" FontSize="11" Padding="5,8" Margin="5,0,0,0"/></Grid>
+            <TextBlock Text="预设先在面板中预览，点击应用才修改桌面。" Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" LineHeight="18" Margin="0,12,0,0"/>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+      </ScrollViewer>
+      <Border Grid.Column="2" CornerRadius="16" Background="#112237" BorderBrush="#213851" BorderThickness="1" Padding="21,18">
+      <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="0,0,7,0">
+        <DockPanel Margin="0,0,0,11"><TextBlock Text="外观与动效" FontSize="16" FontWeight="SemiBold"/><TextBlock x:Name="DirtyLabel" Text="已与桌面同步" Foreground="#809BB7" FontSize="11" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center"/></DockPanel>
+        <Grid Margin="0,0,0,7"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="65"/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions><TextBlock Text="频谱宽度" VerticalAlignment="Center"/><TextBox x:Name="WidthValue" Grid.Column="1" Text="700" Height="27" AutomationProperties.AutomationId="WidthValue"/><TextBlock Grid.Column="2" Text=" px" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><Slider x:Name="WidthSlider" Grid.Row="1" Grid.ColumnSpan="3" Minimum="100" Maximum="1920" Value="700" TickFrequency="10" SmallChange="10" LargeChange="100" AutomationProperties.AutomationId="WidthSlider"/></Grid>
+        <Grid Margin="0,0,0,7"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="65"/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions><TextBlock Text="波动高度" VerticalAlignment="Center"/><TextBox x:Name="HeightValue" Grid.Column="1" Text="60" Height="27" AutomationProperties.AutomationId="HeightValue"/><TextBlock Grid.Column="2" Text=" px" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><Slider x:Name="HeightSlider" Grid.Row="1" Grid.ColumnSpan="3" Minimum="10" Maximum="300" Value="60" TickFrequency="5" SmallChange="5" LargeChange="20" AutomationProperties.AutomationId="HeightSlider"/></Grid>
+        <Grid Margin="0,0,0,7"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="65"/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions><TextBlock Text="声音灵敏度" ToolTip="数值越高，小声音也更容易触发波动。" VerticalAlignment="Center"/><TextBox x:Name="SensitivityValue" Grid.Column="1" Text="45" Height="27" AutomationProperties.AutomationId="SensitivityValue"/><Slider x:Name="SensitivitySlider" Grid.Row="1" Grid.ColumnSpan="3" Minimum="0" Maximum="100" Value="45" SmallChange="1" LargeChange="5" AutomationProperties.AutomationId="SensitivitySlider"/></Grid>
+        <Grid Margin="0,0,0,7"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="65"/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions><TextBlock Text="回落平滑度" ToolTip="数值越高，声音停止后波形回落越柔和。" VerticalAlignment="Center"/><TextBox x:Name="SmoothingValue" Grid.Column="1" Text="0" Height="27" AutomationProperties.AutomationId="SmoothingValue"/><TextBlock Grid.Column="2" Text=" ms" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><Slider x:Name="SmoothingSlider" Grid.Row="1" Grid.ColumnSpan="3" Minimum="0" Maximum="1000" Value="0" SmallChange="10" LargeChange="100" AutomationProperties.AutomationId="SmoothingSlider"/></Grid>
+        <Grid Margin="0,0,0,10"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="65"/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions><TextBlock Text="不透明度" ToolTip="100%完全显示，0%完全透明。" VerticalAlignment="Center"/><TextBox x:Name="OpacityValue" Grid.Column="1" Text="70" Height="27" AutomationProperties.AutomationId="OpacityValue"/><TextBlock Grid.Column="2" Text=" %" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><Slider x:Name="OpacitySlider" Grid.Row="1" Grid.ColumnSpan="3" Minimum="0" Maximum="100" Value="70" SmallChange="5" LargeChange="10" AutomationProperties.AutomationId="OpacitySlider"/></Grid>
+        <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="10"/><ColumnDefinition/></Grid.ColumnDefinitions>
+          <Button x:Name="StartColorButton" Padding="10,9" HorizontalContentAlignment="Stretch" AutomationProperties.AutomationId="StartColorButton"><StackPanel Orientation="Horizontal"><Border x:Name="StartSwatch" Width="27" Height="27" CornerRadius="7" Background="#12EDF7" Margin="0,0,10,0"/><StackPanel><TextBlock Text="起始颜色" FontSize="11" Foreground="#9EB5CF"/><TextBlock x:Name="StartHex" Text="#12EDF7" FontSize="12"/></StackPanel></StackPanel></Button>
+          <Button x:Name="EndColorButton" Grid.Column="2" Padding="10,9" AutomationProperties.AutomationId="EndColorButton"><StackPanel Orientation="Horizontal"><Border x:Name="EndSwatch" Width="27" Height="27" CornerRadius="7" Background="#F50BB9" Margin="0,0,10,0"/><StackPanel><TextBlock Text="结束颜色" FontSize="11" Foreground="#9EB5CF"/><TextBlock x:Name="EndHex" Text="#F50BB9" FontSize="12"/></StackPanel></StackPanel></Button>
+        </Grid>
+        <Border Height="1" Background="#263B53" Margin="0,0,0,14"/>
+        <DockPanel Margin="0,0,0,10"><TextBlock Text="位置与显示" FontSize="15" FontWeight="SemiBold"/><CheckBox x:Name="VisibleCheck" Content="显示频谱" DockPanel.Dock="Right" HorizontalAlignment="Right" IsChecked="True" AutomationProperties.AutomationId="VisibleCheck"/></DockPanel>
+        <Grid Margin="0,0,0,9"><Grid.ColumnDefinitions><ColumnDefinition Width="25"/><ColumnDefinition Width="65"/><ColumnDefinition Width="12"/><ColumnDefinition Width="25"/><ColumnDefinition Width="65"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="X" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><TextBox x:Name="XValue" Grid.Column="1" Text="610" AutomationProperties.AutomationId="XValue"/><TextBlock Grid.Column="3" Text="Y" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><TextBox x:Name="YValue" Grid.Column="4" Text="879" AutomationProperties.AutomationId="YValue"/><StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right"><Button x:Name="CenterButton" Content="水平居中" Padding="10,7" FontSize="11" Margin="8,0,6,0"/><Button x:Name="BottomButton" Content="应用栏上方" Padding="10,7" FontSize="11" AutomationProperties.AutomationId="BottomButton"/></StackPanel></Grid>
+        <CheckBox x:Name="ClickThroughCheck" Content="鼠标穿透，让桌面点击更顺手" IsChecked="True" Margin="0,0,0,10" AutomationProperties.AutomationId="ClickThroughCheck"/>
+        <DockPanel><TextBlock Text="鼠标经过时" VerticalAlignment="Center" Foreground="#C9D9ED"/><ComboBox x:Name="HoverCombo" Width="160" HorizontalAlignment="Right" SelectedIndex="0" AutomationProperties.AutomationId="HoverMode"><ComboBoxItem Content="保持不变" Tag="0"/><ComboBoxItem Content="隐藏频谱" Tag="1"/><ComboBoxItem Content="淡入" Tag="2"/><ComboBoxItem Content="淡出" Tag="3"/></ComboBox></DockPanel>
+        <TextBlock x:Name="HoverHint" Text="关闭鼠标穿透后，可以使用悬停效果。" Foreground="#7996B3" FontSize="11" Margin="0,7,0,0"/>
+      </StackPanel>
+      </ScrollViewer>
+      </Border>
+    </Grid>
+    <Grid Grid.Row="2" Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <StackPanel VerticalAlignment="Center" Margin="0,0,12,0"><TextBlock x:Name="FeedbackText" Text="已读取当前设置" Foreground="#9CB4CD" FontSize="12" TextWrapping="Wrap"/><TextBlock Text="每次应用自动备份，可随时恢复原设置。" Foreground="#647F9C" FontSize="10" Margin="0,5,0,0"/></StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal"><Button x:Name="RestoreButton" Content="恢复原设置" Margin="0,0,8,0" AutomationProperties.AutomationId="RestoreButton"/><Button x:Name="ReloadButton" Content="重新读取" Margin="0,0,8,0" AutomationProperties.AutomationId="ReloadButton"/><Button x:Name="ApplyButton" Content="应用到桌面" Style="{StaticResource PrimaryButton}" MinWidth="130" AutomationProperties.AutomationId="ApplyButton"/></StackPanel>
+    </Grid>
+  </Grid></Grid>
+</Window>

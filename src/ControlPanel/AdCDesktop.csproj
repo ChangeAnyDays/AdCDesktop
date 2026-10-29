@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <ProjectGuid>{3B8B91C3-55E9-4EA6-BD77-029C632417D9}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>SpectrumControl</RootNamespace>
+    <AssemblyName>AdCDesktop</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <LangVersion>5</LangVersion>
+    <StartupObject>SpectrumControl.Program</StartupObject>
+    <OutputPath>..\..\artifacts\control-panel\</OutputPath>
+    <ApplicationIcon>..\..\assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Xml"/><Reference Include="System.Xaml"/>
+    <Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/><Reference Include="System.Runtime.Serialization"/>
+    <Reference Include="WindowsBase"/><Reference Include="PresentationCore"/><Reference Include="PresentationFramework"/>
+    <Compile Include="SpectrumPanel.cs"/><Compile Include="SpectrumBackend.cs"/>
+    <EmbeddedResource Include="SpectrumPanel.xaml"><LogicalName>SpectrumControl.Panel.xaml</LogicalName></EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+</Project>
