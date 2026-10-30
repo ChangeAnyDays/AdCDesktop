@@ -257,7 +257,7 @@ $manifest = [ordered]@{
 Write-DesktopJson (Join-Path $InstallDir 'desktop-style.json') $manifest
 if (!$NoShortcuts -and !$Offline) {
     $shell = New-Object -ComObject WScript.Shell
-    foreach ($item in @(@{Name='AdC桌面美化';Target=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe');Arguments=('--root "' + $InstallDir + '"')},@{Name='启动AdC桌面美化';Target=(Join-Path $InstallDir 'Start-Desktop.cmd');Arguments=''},@{Name='恢复原桌面';Target=(Join-Path $InstallDir 'Restore-Desktop.cmd');Arguments=''})) {
+    foreach ($item in @(@{Name='ADC 总控台';Target=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe');Arguments=('--root "' + $InstallDir + '"')},@{Name='启动AdC桌面美化';Target=(Join-Path $InstallDir 'Start-Desktop.cmd');Arguments=''},@{Name='恢复原桌面';Target=(Join-Path $InstallDir 'Restore-Desktop.cmd');Arguments=''})) {
         $shortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) ($item.Name + '.lnk')
         if (Test-Path -LiteralPath $shortcutPath) { $old = $shell.CreateShortcut($shortcutPath); if ($old.TargetPath -ine $item.Target) { $shortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) ('AdCDesktop-' + $item.Name + '.lnk') } }
         if (Test-Path -LiteralPath $shortcutPath) { $old = $shell.CreateShortcut($shortcutPath); if ($old.TargetPath -ine $item.Target) { Write-Warning "Existing shortcut was left untouched: $shortcutPath"; continue } }

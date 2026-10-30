@@ -27,7 +27,7 @@ $tracked = @($tracked | Sort-Object -Unique)
 if ($tracked.Count -eq 0) { throw 'No publishable source files were found.' }
 $issues = New-Object 'System.Collections.Generic.List[string]'
 $forbiddenExtensions = @('.exe','.dll','.msi','.msix','.msixbundle','.appx','.zip','.7z','.rar','.pkg','.mp4','.mov','.mp3','.gif','.reg','.lnk','.log','.dmp','.pfx','.p12','.key')
-$textExtensions = @('.md','.txt','.cs','.xaml','.ps1','.psm1','.psd1','.json','.yml','.yaml','.xml','.manifest','.cmd','.bat','.sln','.csproj')
+$textExtensions = @('.html','.md','.txt','.cs','.xaml','.ps1','.psm1','.psd1','.json','.yml','.yaml','.xml','.manifest','.cmd','.bat','.sln','.csproj')
 $rules = @(
     @{Name='absolute local user profile';Pattern='(?i)[A-Z]:[\\/]+Users[\\/]+(?!(?:Public|Default)(?:[\\/]|$))[^\\/\r\n"''<>$]+'},
     @{Name='personal Steam account ID';Pattern='(?<![A-Za-z0-9])765611\d{11}(?![A-Za-z0-9])'},

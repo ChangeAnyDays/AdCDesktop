@@ -39,3 +39,5 @@
 !.env.example
 Thumbs.db
 Desktop.ini
+
+**/nexus-path.txt

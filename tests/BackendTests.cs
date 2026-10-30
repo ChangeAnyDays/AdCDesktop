@@ -16,7 +16,9 @@ namespace SpectrumControlTests
         {
             try
             {
-                testOutput = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fixtures", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N"));
+                // Keep nested backup paths below .NET Framework's legacy MAX_PATH even
+                // when the checkout itself is deeply nested. Never use a shared fixture.
+                testOutput = Path.Combine(Path.GetTempPath(), "adc-backend-" + Guid.NewGuid().ToString("N").Substring(0, 12));
                 Directory.CreateDirectory(testOutput);
                 TestReadAndValidation();
                 TestApplyAndScopedRestore();
@@ -28,6 +30,19 @@ namespace SpectrumControlTests
             {
                 Console.Error.WriteLine("FAIL: " + error);
                 return 1;
+            }
+            finally
+            {
+                if (testOutput != null && Directory.Exists(testOutput))
+                {
+                    DirectoryInfo owned = new DirectoryInfo(Path.GetFullPath(testOutput));
+                    string temporary = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+                    if (!String.Equals(owned.Parent.FullName, temporary, StringComparison.OrdinalIgnoreCase) ||
+                        !owned.Name.StartsWith("adc-backend-", StringComparison.Ordinal) ||
+                        (owned.Attributes & FileAttributes.ReparsePoint) != 0)
+                        throw new IOException("Refusing to clean an unexpected backend fixture path.");
+                    owned.Delete(true);
+                }
             }
         }
 

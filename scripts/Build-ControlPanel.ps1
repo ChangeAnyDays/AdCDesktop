@@ -26,8 +26,12 @@ foreach ($name in @('PresentationCore.dll','PresentationFramework.dll','WindowsB
 }
 $arguments += (Join-Path $source 'SpectrumPanel.cs')
 $arguments += (Join-Path $source 'SpectrumBackend.cs')
+$arguments += (Join-Path $source 'NexusBackend.cs')
+$arguments += (Join-Path $source 'SpectrumPreview.cs')
+$arguments += (Join-Path $source 'StartupBackend.cs')
 & $compiler $arguments
 if ($LASTEXITCODE -ne 0) { throw 'Control panel compilation failed.' }
 $runtimeConfig = '<?xml version="1.0" encoding="utf-8"?><configuration><startup><supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" /></startup></configuration>'
 [IO.File]::WriteAllText(($exe + '.config'), $runtimeConfig, (New-Object Text.UTF8Encoding($false)))
+Copy-Item -LiteralPath (Join-Path $repoRoot 'docs\QuickStart.html') -Destination (Join-Path $OutputDir 'QuickStart.html') -Force
 Write-Output $exe

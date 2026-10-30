@@ -16,14 +16,15 @@ using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 using Path = System.IO.Path;
 
-[assembly: AssemblyTitle("AdC桌面美化")]
-[assembly: AssemblyDescription("用颜色、滑块和预设自定义桌面频谱")]
-[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyTitle("ADC 总控台")]
+[assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
+[assembly: AssemblyVersion("1.2.1.0")]
 
 namespace SpectrumControl
 {
@@ -50,7 +51,7 @@ namespace SpectrumControl
                     }
                     Application app = new Application();
                     app.ShutdownMode = ShutdownMode.OnMainWindowClose;
-                    Panel panel = new Panel(root, !smoke);
+                    Panel panel = new Panel(root, !smoke && !screenshot);
                     app.MainWindow = panel.Window;
                     if (!screenshot && !smoke)
                         panel.Window.SourceInitialized += delegate
@@ -98,7 +99,7 @@ namespace SpectrumControl
             {
                 if (args.Length > 0 && (args[0] == "--screenshot" || args[0] == "--smoke-test"))
                 { Console.Error.WriteLine(ex.ToString()); return 1; }
-                MessageBox.Show("控制台暂时无法打开：\n" + ex.Message + "\n\n桌面频谱不会因此被关闭。", "AdC桌面美化", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("控制台暂时无法打开：\n" + ex.Message + "\n\n桌面频谱不会因此被关闭。", "ADC 总控台", MessageBoxButton.OK, MessageBoxImage.Information);
                 return 1;
             }
         }
@@ -152,18 +153,33 @@ namespace SpectrumControl
         private readonly int screenHeight;
         private string startColor;
         private string endColor;
+        private readonly SpectrumPreview preview = new SpectrumPreview();
+        private double previewSeconds;
+        private double lastPreviewTick;
+        private bool previewPaused;
+        private bool nexusPage;
+        private readonly NexusBackend nexus;
+        private bool nexusLoading;
+        private bool nexusDirty;
+        private readonly StartupBackend startup;
+        private bool refreshingStartup;
+        private double previewCanvasWidth, previewCanvasHeight;
+        private System.Windows.Shapes.Path previewLine, previewGlow;
+        private string previewGradientKey;
 
         public Panel(string rootPath, bool integration)
         {
             root = rootPath;
             backend = new SpectrumBackend(rootPath, integration);
+            nexus = new NexusBackend(rootPath, integration);
+            startup = new StartupBackend(integration);
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpectrumControl.Panel.xaml"))
                 Window = (Window)XamlReader.Load(stream);
             screenWidth = Forms.Screen.PrimaryScreen.Bounds.Width;
             screenHeight = Forms.Screen.PrimaryScreen.Bounds.Height;
             Window.MaxHeight = Math.Max(620, SystemParameters.WorkArea.Height - 35);
             Window.MinHeight = Math.Min(650, Window.MaxHeight);
-            Window.Width = Math.Min(1080, SystemParameters.WorkArea.Width - 30);
+            Window.Width = Math.Min(1160, SystemParameters.WorkArea.Width - 30);
             Window.MinWidth = Math.Min(940, Window.Width);
             Find<Slider>("WidthSlider").Maximum = Math.Max(screenWidth, 1000);
             WireSlider("WidthSlider", "WidthValue");
@@ -212,15 +228,314 @@ namespace SpectrumControl
             {
                 try { int dark = 1; Native.DwmSetWindowAttribute(new WindowInteropHelper(Window).Handle, 20, ref dark, 4); } catch { }
             };
+            Find<Button>("HelpButton").IsEnabled = integration;
+            Find<Button>("HelpButton").Click += delegate
+            {
+                Action openHelp = delegate
+                {
+                    string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "QuickStart.html");
+                    if (!File.Exists(path)) throw new FileNotFoundException("未找到教程，请将随包的 QuickStart.html 放在程序旁边。");
+                    using (Process process = Process.Start(new ProcessStartInfo(path) { UseShellExecute = true })) { }
+                };
+                if (nexusPage) NexusAction(openHelp); else RunAction(openHelp);
+            };
+            WireNexus();
+            WireStartup();
+            Find<Button>("WindowsStartupButton").IsEnabled = integration;
+            Find<Button>("WindowsStartupButton").Click += delegate
+            {
+                try { using (Process process = Process.Start(new ProcessStartInfo("ms-settings:startupapps") { UseShellExecute = true })) { } }
+                catch (Exception ex) { Find<TextBlock>("StartupFeedback").Text = "系统启动项未能打开：" + ex.Message; }
+            };
+            Window.Loaded += delegate { WireMotion(Window.Content as DependencyObject); };
+            Window.Activated += delegate { RefreshStartup(); };
+            Find<Button>("SpectrumTab").Click += delegate { SelectPage(false); };
+            Find<Button>("NexusTab").Click += delegate { SelectPage(true); };
+            Find<Button>("PausePreviewButton").Click += delegate
+            {
+                previewPaused = !previewPaused;
+                Find<Button>("PausePreviewButton").Content = previewPaused ? "继续动画" : "暂停动画";
+                UpdateAnimation();
+            };
+            Find<CheckBox>("PreviewSilenceCheck").Checked += delegate { DrawPreview(); };
+            Find<CheckBox>("PreviewSilenceCheck").Unchecked += delegate { DrawPreview(); };
             LoadSettings(backend.Read());
             animation = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(40) };
-            animation.Tick += delegate { DrawPreview(); };
+            animation.Tick += delegate
+            {
+                double now = clock.Elapsed.TotalSeconds;
+                previewSeconds += Math.Min(0.1, Math.Max(0, now - lastPreviewTick));
+                lastPreviewTick = now;
+                DrawPreview();
+            };
             animation.Start();
             statusTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
-            statusTimer.Tick += delegate { RefreshStatus(); };
+            statusTimer.Tick += delegate { RefreshStatus(); RefreshNexusStatus(); RefreshStartup(); };
             statusTimer.Start();
             Window.Closed += delegate { animation.Stop(); statusTimer.Stop(); };
+            Window.StateChanged += delegate { UpdateAnimation(); };
+            Window.IsVisibleChanged += delegate { UpdateAnimation(); };
+            SelectPage(false);
             Find<Canvas>("PreviewCanvas").SizeChanged += delegate { DrawPreview(); };
+        }
+
+        private string SpectrumExecutable { get { return Path.Combine(root, "Rainmeter", "Rainmeter.exe"); } }
+        private string NexusStartupExecutable { get { return nexus.StartupExecutable ?? Path.Combine(root, "Nexus", "Nexus.exe"); } }
+        private void WireStartup()
+        {
+            foreach (bool isNexus in new[] { false, true })
+            {
+                bool component = isNexus;
+                CheckBox toggle = Find<CheckBox>(component ? "NexusStartupToggle" : "SpectrumStartupToggle");
+                toggle.Checked += delegate { ChangeStartup(component); };
+                toggle.Unchecked += delegate { ChangeStartup(component); };
+            }
+            RefreshStartup();
+        }
+        private void RefreshStartup()
+        {
+            if (refreshingStartup) return;
+            refreshingStartup = true;
+            try
+            {
+                foreach (bool isNexus in new[] { false, true })
+                {
+                    CheckBox toggle = Find<CheckBox>(isNexus ? "NexusStartupToggle" : "SpectrumStartupToggle");
+                    TextBlock label = Find<TextBlock>(isNexus ? "NexusStartupStatus" : "SpectrumStartupStatus");
+                    try
+                    {
+                        StartupState state = startup.Read(isNexus ? StartupBackend.NexusName : StartupBackend.SpectrumName,
+                            isNexus ? NexusStartupExecutable : SpectrumExecutable);
+                        if (toggle.IsChecked != state.Enabled)
+                        {
+                            if (toggle.Template != null)
+                            {
+                                Ellipse knob = toggle.Template.FindName("SwitchKnob", toggle) as Ellipse;
+                                if (knob != null) knob.ClearValue(UIElement.RenderTransformProperty);
+                            }
+                            toggle.IsChecked = state.Enabled;
+                        }
+                        toggle.IsEnabled = state.CanChange;
+                        label.Text = state.Detail;
+                        label.Foreground = Brush(state.Enabled ? "#81E8CC" : "#9FB9CE");
+                    }
+                    catch (Exception ex)
+                    {
+                        toggle.IsChecked = false; toggle.IsEnabled = false;
+                        label.Text = "无法读取：" + ex.Message;
+                        label.Foreground = Brush("#FFA49A");
+                    }
+                }
+            }
+            finally { refreshingStartup = false; }
+        }
+        private void ChangeStartup(bool isNexus)
+        {
+            if (refreshingStartup) return;
+            CheckBox toggle = Find<CheckBox>(isNexus ? "NexusStartupToggle" : "SpectrumStartupToggle");
+            bool enabled = toggle.IsChecked == true;
+            TextBlock message = Find<TextBlock>("StartupFeedback");
+            try
+            {
+                startup.Set(isNexus ? StartupBackend.NexusName : StartupBackend.SpectrumName,
+                    isNexus ? NexusStartupExecutable : SpectrumExecutable, enabled);
+                message.Text = (isNexus ? "Nexus" : "频谱") + (enabled ? "自启动已保存，下次登录生效。" : "的 ADC 自启动已关闭，当前程序继续运行。") + " 原程序另外设置的自启动需在原程序中关闭。";
+                message.Foreground = Brush("#81E8CC");
+                RefreshStartup();
+                AnimateSwitch(toggle, enabled);
+            }
+            catch (Exception ex)
+            {
+                RefreshStartup();
+                message.Text = "未能保存：" + ex.Message;
+                message.Foreground = Brush("#FFA49A");
+            }
+        }
+        private static void AnimateSwitch(CheckBox toggle, bool enabled)
+        {
+            if (!SystemParameters.ClientAreaAnimation || toggle.Template == null) return;
+            Ellipse knob = toggle.Template.FindName("SwitchKnob", toggle) as Ellipse;
+            if (knob == null) return;
+            var transform = new TranslateTransform(enabled ? 22 : 0, 0);
+            knob.RenderTransform = transform;
+            transform.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(enabled ? 0 : 22, enabled ? 22 : 0,
+                TimeSpan.FromMilliseconds(160)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+        }
+        private void WireMotion(DependencyObject element)
+        {
+            if (element == null) return;
+            Button button = element as Button;
+            if (button != null)
+            {
+                button.RenderTransformOrigin = new Point(0.5, 0.5);
+                button.RenderTransform = new ScaleTransform(1, 1);
+                button.MouseEnter += delegate { AnimateButton(button, 1.015); };
+                button.MouseLeave += delegate { AnimateButton(button, 1); };
+                button.PreviewMouseLeftButtonDown += delegate { AnimateButton(button, 0.98); };
+                button.PreviewMouseLeftButtonUp += delegate { AnimateButton(button, button.IsMouseOver ? 1.015 : 1); };
+            }
+            foreach (object child in LogicalTreeHelper.GetChildren(element)) WireMotion(child as DependencyObject);
+        }
+        private static void AnimateButton(Button button, double scale)
+        {
+            if (!SystemParameters.ClientAreaAnimation || !button.IsEnabled) return;
+            ScaleTransform transform = button.RenderTransform as ScaleTransform;
+            if (transform == null) return;
+            var animation = new DoubleAnimation(scale, TimeSpan.FromMilliseconds(110)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            transform.BeginAnimation(ScaleTransform.ScaleXProperty, animation);
+            transform.BeginAnimation(ScaleTransform.ScaleYProperty, animation);
+        }
+        private void AnimatePage(FrameworkElement page)
+        {
+            page.BeginAnimation(UIElement.OpacityProperty, null);
+            page.Opacity = 1;
+            page.RenderTransform = new TranslateTransform();
+            if (!Window.IsVisible || !SystemParameters.ClientAreaAnimation) return;
+            var duration = TimeSpan.FromMilliseconds(180);
+            page.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0.55, 1, duration) { FillBehavior = FillBehavior.Stop });
+            ((TranslateTransform)page.RenderTransform).BeginAnimation(TranslateTransform.YProperty,
+                new DoubleAnimation(7, 0, duration) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
+        }
+
+        private void WireNexus()
+        {
+            Find<Button>("NexusStartButton").Click += delegate { NexusAction(delegate { nexus.Start(false); NexusFeedback("已请求启动 Nexus。", false); }); };
+            Find<Button>("NexusSettingsButton").Click += delegate { NexusAction(delegate
+            {
+                nexus.Start(true);
+                NexusFeedback("已请求打开原生设置；如未弹出，可点击 Nexus 控制图标或按默认快捷键 Ctrl+F11。", false);
+            }); };
+            Find<Button>("NexusLocateButton").Click += delegate
+            {
+                using (Forms.OpenFileDialog dialog = new Forms.OpenFileDialog())
+                {
+                    dialog.Title = "选择 Nexus.exe"; dialog.Filter = "Nexus 程序|Nexus.exe"; dialog.CheckFileExists = true;
+                    if (dialog.ShowDialog(new DialogOwner(new WindowInteropHelper(Window).Handle)) == Forms.DialogResult.OK)
+                        NexusAction(delegate { nexus.SelectExecutable(dialog.FileName); LoadNexusSettings(); });
+                }
+            };
+            Find<Button>("NexusReloadButton").Click += delegate { LoadNexusSettings(); };
+            Find<Button>("NexusApplyButton").Click += delegate { ApplyNexus(false); };
+            Find<Button>("NexusRestoreButton").Click += delegate { ApplyNexus(true); };
+            Find<Button>("NexusQuietButton").Click += delegate
+            {
+                Find<CheckBox>("NexusLabelsCheck").IsChecked = false;
+                Find<CheckBox>("NexusTooltipsCheck").IsChecked = false;
+                ApplyNexus(false);
+            };
+            foreach (string name in new[] { "NexusLabelsCheck", "NexusTooltipsCheck" })
+            {
+                Find<CheckBox>(name).Checked += delegate { MarkNexusDirty(); };
+                Find<CheckBox>(name).Unchecked += delegate { MarkNexusDirty(); };
+                Find<CheckBox>(name).Indeterminate += delegate { MarkNexusDirty(); };
+            }
+            RefreshNexusStatus();
+            LoadNexusSettings();
+        }
+        private void MarkNexusDirty()
+        {
+            if (nexusLoading) return;
+            nexusDirty = true;
+            NexusFeedback("文字设置待应用。请先退出 Nexus，应用后重新启动。", false);
+        }
+        private void NexusFeedback(string message, bool error)
+        {
+            Find<TextBlock>("NexusFeedback").Text = message;
+            Find<TextBlock>("NexusFeedback").Foreground = Brush(error ? "#FFA49A" : "#9CB4CD");
+        }
+        private void NexusAction(Action action)
+        {
+            try { action(); }
+            catch (Exception ex) { NexusFeedback("操作未完成：" + ex.Message, true); }
+            finally { RefreshNexusStatus(); }
+        }
+        private void ApplyNexus(bool restore)
+        {
+            NexusAction(delegate
+            {
+                if (!restore && (Find<CheckBox>("NexusLabelsCheck").IsChecked == null || Find<CheckBox>("NexusTooltipsCheck").IsChecked == null))
+                    throw new InvalidOperationException("不同 Dock 的设置不一致，请先明确选择是否显示文字。");
+                nexus.Apply(Find<CheckBox>("NexusLabelsCheck").IsChecked == true, Find<CheckBox>("NexusTooltipsCheck").IsChecked == true, restore);
+                LoadNexusSettings();
+                NexusFeedback(restore ? "已恢复原文字设置。点击「启动 Nexus」生效。" : "文字设置已保存并校验。点击「启动 Nexus」生效。", false);
+            });
+        }
+        private void LoadNexusSettings()
+        {
+            nexusLoading = true;
+            bool supported = false;
+            try
+            {
+                if (!nexus.CanIntegrate) throw new InvalidOperationException("测试模式：不会读取或修改本机 Nexus 设置。");
+                List<NexusValue> values = nexus.Settings.Read();
+                bool? labels = null, tips = null;
+                bool firstLabel = true;
+                bool mixed = false;
+                foreach (NexusValue value in values)
+                    if (NexusSettingsService.IsLabelName(value.Name))
+                    {
+                        bool enabled = NexusSettingsService.Decode(value) != 0;
+                        if (!firstLabel && labels != enabled) mixed = true;
+                        labels = enabled; firstLabel = false;
+                    }
+                    else tips = NexusSettingsService.Decode(value) != 0;
+                Find<CheckBox>("NexusLabelsCheck").IsChecked = mixed ? (bool?)null : labels;
+                Find<CheckBox>("NexusTooltipsCheck").IsChecked = tips;
+                nexusDirty = false;
+                supported = true;
+                NexusFeedback(mixed ? "多个 Dock 的标签设置不同。选择后将统一修改文字显示。" : "已读取文字设置。修改前请先退出 Nexus；首次应用会备份原值。", false);
+            }
+            catch (Exception ex)
+            {
+                Find<CheckBox>("NexusLabelsCheck").IsChecked = null;
+                Find<CheckBox>("NexusTooltipsCheck").IsChecked = null;
+                NexusFeedback(ex.Message + "\n手动关闭：外观 → 取消鼠标经过时显示图标标签；行为 → 更多选项 → 气泡提示选择从不。", false);
+            }
+            finally
+            {
+                nexusLoading = false;
+                foreach (string name in new[] { "NexusQuietButton", "NexusApplyButton" }) Find<Button>(name).IsEnabled = supported;
+                foreach (string name in new[] { "NexusLabelsCheck", "NexusTooltipsCheck" }) Find<CheckBox>(name).IsEnabled = supported;
+                Find<Button>("NexusRestoreButton").IsEnabled = supported && nexus.Settings.HasBackup;
+            }
+        }
+        private void RefreshNexusStatus()
+        {
+            try
+            {
+                string path = nexus.Executable;
+                Find<TextBlock>("NexusStatus").Text = nexus.Running ? "Nexus 正在运行" : path == null ? "尚未找到 Nexus" : "Nexus 已安装 · 未运行";
+                Find<TextBlock>("NexusPath").Text = path ?? "仅安装频谱也可使用总控台；如已安装 Nexus，请选择程序路径。";
+                Find<Button>("NexusStartButton").IsEnabled = path != null && nexus.CanIntegrate;
+                Find<Button>("NexusSettingsButton").IsEnabled = path != null && nexus.CanIntegrate;
+                Find<Button>("NexusLocateButton").IsEnabled = nexus.CanIntegrate;
+            }
+            catch (Exception ex) { Find<TextBlock>("NexusStatus").Text = "无法读取 Nexus 状态：" + ex.Message; }
+        }
+
+        private void SelectPage(bool showNexus)
+        {
+            bool changedPage = nexusPage != showNexus;
+            nexusPage = showNexus;
+            Find<Grid>("SpectrumPage").Visibility = showNexus ? Visibility.Collapsed : Visibility.Visible;
+            Find<Grid>("SpectrumFooter").Visibility = showNexus ? Visibility.Collapsed : Visibility.Visible;
+            Find<ScrollViewer>("NexusPage").Visibility = showNexus ? Visibility.Visible : Visibility.Collapsed;
+            Find<Button>("SpectrumTab").BorderBrush = Brush(showNexus ? "#324B68" : "#54D8DF");
+            Find<Button>("NexusTab").BorderBrush = Brush(showNexus ? "#54D8DF" : "#324B68");
+            Find<Button>("SpectrumTab").Background = Brush(showNexus ? "#16273C" : "#214B5D");
+            Find<Button>("NexusTab").Background = Brush(showNexus ? "#303858" : "#16273C");
+            Find<Button>("SpectrumTab").Foreground = Brush(showNexus ? "#A9BCD1" : "#B4F5EF");
+            Find<Button>("NexusTab").Foreground = Brush(showNexus ? "#DBD8FF" : "#A9BCD1");
+            if (showNexus) { RefreshNexusStatus(); if (!nexusDirty) LoadNexusSettings(); }
+            if (changedPage) AnimatePage(showNexus ? (FrameworkElement)Find<ScrollViewer>("NexusPage") : Find<Grid>("SpectrumPage"));
+            UpdateAnimation();
+        }
+        private void UpdateAnimation()
+        {
+            if (animation == null) return;
+            lastPreviewTick = clock.Elapsed.TotalSeconds;
+            if (previewPaused || nexusPage || !Window.IsVisible || Window.WindowState == WindowState.Minimized) animation.Stop();
+            else animation.Start();
         }
 
         private T Find<T>(string name) where T : class
@@ -390,30 +705,45 @@ namespace SpectrumControl
             if (startColor == null || endColor == null) return;
             Canvas canvas = Find<Canvas>("PreviewCanvas");
             double w = canvas.ActualWidth > 5 ? canvas.ActualWidth : 308, h = canvas.ActualHeight > 5 ? canvas.ActualHeight : 196;
-            canvas.Children.Clear();
-            for (int i = 1; i <= 4; i++) canvas.Children.Add(new Line { X1 = 0, X2 = w, Y1 = h * i / 5, Y2 = h * i / 5, Stroke = Brush("#142D42"), StrokeThickness = 1 });
-            for (int i = 1; i <= 5; i++) canvas.Children.Add(new Line { X1 = w * i / 6, X2 = w * i / 6, Y1 = 0, Y2 = h, Stroke = Brush("#102A40"), StrokeThickness = 1 });
+            if (previewLine == null || previewCanvasWidth != w || previewCanvasHeight != h)
+            {
+                canvas.Children.Clear();
+                previewCanvasWidth = w; previewCanvasHeight = h;
+                for (int i = 1; i <= 4; i++) canvas.Children.Add(new Line { X1 = 0, X2 = w, Y1 = h * i / 5, Y2 = h * i / 5, Stroke = Brush("#142D42"), StrokeThickness = 1 });
+                for (int i = 1; i <= 5; i++) canvas.Children.Add(new Line { X1 = w * i / 6, X2 = w * i / 6, Y1 = 0, Y2 = h, Stroke = Brush("#102A40"), StrokeThickness = 1 });
+                previewGlow = new System.Windows.Shapes.Path { StrokeThickness = 12, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round };
+                previewLine = new System.Windows.Shapes.Path { StrokeThickness = 2.5, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round };
+                canvas.Children.Add(previewGlow); canvas.Children.Add(previewLine);
+                previewGradientKey = null;
+            }
             double width = Find<Slider>("WidthSlider").Value, height = Find<Slider>("HeightSlider").Value;
-            double amplitude = Math.Min(66, 9 + height * 0.4);
+            double amplitude = Math.Min(h * 0.6, height * 0.45);
             double waveWidth = (w - 28) * Math.Min(1, Math.Max(0.32, width / 1000));
-            double phase = clock.Elapsed.TotalSeconds * 1.5;
+            double[] levels = preview.Step(previewSeconds, previewPaused ? 0 : 0.04,
+                Find<Slider>("SensitivitySlider").Value, Find<Slider>("SmoothingSlider").Value,
+                Find<CheckBox>("PreviewSilenceCheck").IsChecked == true);
             StreamGeometry geometry = new StreamGeometry();
             using (StreamGeometryContext context = geometry.Open())
             {
                 for (int i = 0; i <= 100; i++)
                 {
                     double t = i / 100.0;
-                    double envelope = Math.Pow(Math.Sin(Math.PI * t), 1.4);
-                    double y = h / 2 + envelope * amplitude * (0.65 * Math.Sin(t * 30 + phase) + 0.22 * Math.Sin(t * 69 - phase * 1.5));
+                    double y = h * 0.72 - levels[i] * amplitude;
                     Point point = new Point((w - waveWidth) / 2 + t * waveWidth, y);
                     if (i == 0) context.BeginFigure(point, false, false); else context.LineTo(point, true, false);
                 }
             }
             geometry.Freeze();
-            LinearGradientBrush gradient = new LinearGradientBrush((Color)ColorConverter.ConvertFromString(startColor), (Color)ColorConverter.ConvertFromString(endColor), new Point(0, 0.5), new Point(1, 0.5));
+            if (previewGradientKey != startColor + endColor)
+            {
+                var gradient = new LinearGradientBrush((Color)ColorConverter.ConvertFromString(startColor), (Color)ColorConverter.ConvertFromString(endColor), new Point(0, 0.5), new Point(1, 0.5));
+                gradient.Freeze();
+                previewLine.Stroke = gradient; previewGlow.Stroke = gradient;
+                previewGradientKey = startColor + endColor;
+            }
             double alpha = Find<Slider>("OpacitySlider").Value / 100;
-            canvas.Children.Add(new System.Windows.Shapes.Path { Data = geometry, Stroke = gradient, StrokeThickness = 12, Opacity = 0.1 * alpha, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round });
-            canvas.Children.Add(new System.Windows.Shapes.Path { Data = geometry, Stroke = gradient, StrokeThickness = 2.5, Opacity = alpha, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round });
+            previewLine.Data = geometry; previewGlow.Data = geometry;
+            previewLine.Opacity = alpha; previewGlow.Opacity = alpha * 0.1;
             Find<Border>("PreviewHidden").Visibility = Find<CheckBox>("VisibleCheck").IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
             Find<TextBlock>("PreviewSize").Text = string.Format("{0:0} × {1:0} 像素 · 不透明度 {2:0}%", width, height, Find<Slider>("OpacitySlider").Value);
         }

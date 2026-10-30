@@ -15,8 +15,22 @@ if (!$SkipBuild) { & (Join-Path $repositoryRoot 'scripts\Build-ControlPanel.ps1'
 $application = Join-Path $repositoryRoot 'artifacts\control-panel\AdCDesktop.exe'
 if (!(Test-Path -LiteralPath $application)) { throw "Build output is missing: $application" }
 
-$backendTest = Join-Path $outputRoot 'BackendTests.exe'
-$backendArguments = @('/nologo','/target:exe','/codepage:65001',('/out:' + $backendTest),'/reference:System.Core.dll','/reference:System.Windows.Forms.dll')
+# Short, unique temporary roots avoid .NET Framework MAX_PATH failures in deep checkouts.
+$fixtureWorkspace = Join-Path ([IO.Path]::GetTempPath()) ('adc-ui-' + [Guid]::NewGuid().ToString('N').Substring(0,12))
+$fixtureToken = [Guid]::NewGuid().ToString('N')
+[void][IO.Directory]::CreateDirectory($fixtureWorkspace)
+$ownershipFile = Join-Path $fixtureWorkspace '.adc-test-owner'
+[IO.File]::WriteAllText($ownershipFile,$fixtureToken)
+try {
+$applicationCopy = Join-Path $fixtureWorkspace 'AdCDesktop.exe'
+# Exercise an exact local copy, independent of checkout zone metadata and stale ACLs.
+[IO.File]::WriteAllBytes($applicationCopy,[IO.File]::ReadAllBytes($application))
+if (Test-Path -LiteralPath ($application + '.config')) {
+    [IO.File]::WriteAllBytes(($applicationCopy + '.config'),[IO.File]::ReadAllBytes($application + '.config'))
+}
+$application = $applicationCopy
+$backendTest = Join-Path $fixtureWorkspace 'BackendTests.exe'
+$backendArguments = @('/nologo','/target:exe','/codepage:65001',('/out:' + $backendTest),'/reference:System.Core.dll','/reference:System.Windows.Forms.dll','/reference:System.Drawing.dll')
 $backendArguments += Join-Path $repositoryRoot 'src\ControlPanel\SpectrumBackend.cs'
 $backendArguments += Join-Path $PSScriptRoot 'BackendTests.cs'
 & $compiler $backendArguments
@@ -24,7 +38,26 @@ if ($LASTEXITCODE -ne 0) { throw 'Backend test compilation failed.' }
 & $backendTest
 if ($LASTEXITCODE -ne 0) { throw 'Backend fixture tests failed.' }
 
-$fixtureRoot = Join-Path $outputRoot ('ui-fixture-' + [Guid]::NewGuid().ToString('N'))
+$centerTest = Join-Path $fixtureWorkspace 'ControlCenterTests.exe'
+$centerArguments = @('/nologo','/target:exe','/codepage:65001',('/out:' + $centerTest),'/reference:System.Core.dll','/reference:System.Runtime.Serialization.dll')
+$centerArguments += Join-Path $repositoryRoot 'src\ControlPanel\NexusBackend.cs'
+$centerArguments += Join-Path $repositoryRoot 'src\ControlPanel\SpectrumPreview.cs'
+$centerArguments += Join-Path $PSScriptRoot 'ControlCenterTests.cs'
+& $compiler $centerArguments
+if ($LASTEXITCODE -ne 0) { throw 'Control center test compilation failed.' }
+& $centerTest
+if ($LASTEXITCODE -ne 0) { throw 'Control center fixture tests failed.' }
+
+$startupTest = Join-Path $fixtureWorkspace 'StartupTests.exe'
+$startupArguments = @('/nologo','/target:exe','/codepage:65001',('/out:' + $startupTest),'/reference:System.Core.dll')
+$startupArguments += Join-Path $repositoryRoot 'src\ControlPanel\StartupBackend.cs'
+$startupArguments += Join-Path $PSScriptRoot 'StartupTests.cs'
+& $compiler $startupArguments
+if ($LASTEXITCODE -ne 0) { throw 'Startup test compilation failed.' }
+& $startupTest
+if ($LASTEXITCODE -ne 0) { throw 'Startup fixture tests failed.' }
+
+$fixtureRoot = Join-Path $fixtureWorkspace 'root'
 $skinPath = Join-Path $fixtureRoot 'Rainmeter\Skins\RetrOcOlOr\Visualizer\Visualizer.ini'
 $colorsPath = Join-Path $fixtureRoot 'Rainmeter\Skins\RetrOcOlOr\@Resources\Variables.inc'
 $settingsPath = Join-Path $fixtureRoot 'Rainmeter\Rainmeter.ini'
@@ -35,7 +68,7 @@ $utf8 = New-Object Text.UTF8Encoding($true)
 [IO.File]::WriteAllText($colorsPath,"[Variables]`r`nColor1=255,255,255`r`nColor2=18,237,247`r`nColor3=245,11,185`r`n",$utf8)
 [IO.File]::WriteAllText($settingsPath,"[Rainmeter]`r`nSkinPath=Skins\`r`nDisableDragging=1`r`n[Welfare\Clock]`r`nActive=1`r`nWindowY=76%`r`n[RetrOcOlOr\Visualizer]`r`nActive=1`r`nWindowX=610`r`nWindowY=879`r`nAlphaValue=178`r`nOnHover=2`r`nClickThrough=1`r`n",$utf8)
 
-$uiTest = Join-Path $outputRoot 'FixtureUiChecks.exe'
+$uiTest = Join-Path $fixtureWorkspace 'FixtureUiChecks.exe'
 $uiArguments = @('/nologo','/target:exe','/codepage:65001',('/out:' + $uiTest),'/reference:System.Core.dll','/reference:System.Xaml.dll')
 foreach ($reference in @('PresentationCore.dll','PresentationFramework.dll','WindowsBase.dll')) {
     $uiArguments += '/reference:' + (Join-Path $framework ('WPF\' + $reference))
@@ -44,18 +77,33 @@ $uiArguments += Join-Path $PSScriptRoot 'FixtureUiChecks.cs'
 & $compiler $uiArguments
 if ($LASTEXITCODE -ne 0) { throw 'UI test compilation failed.' }
 $resultPath = Join-Path $outputRoot 'ui-regression-result.json'
-& $uiTest $application $fixtureRoot $resultPath
+& $uiTest $application $fixtureRoot $resultPath $fixtureToken
 if ($LASTEXITCODE -ne 0) { throw 'UI fixture regression failed.' }
 $result = Get-Content -LiteralPath $resultPath -Raw -Encoding UTF8 | ConvertFrom-Json
-if (!$result.success -or $result.checks -lt 12) { throw 'UI regression did not complete all expected checks.' }
+if (!$result.success -or $result.checks -lt 25 -or $result.layoutScenarios -ne 16) { throw 'UI regression did not complete all expected checks.' }
 $fixtureFiles = @($skinPath,$colorsPath,$settingsPath)
 $beforePreview = @($fixtureFiles | ForEach-Object { (Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash })
 $previewPath = Join-Path $outputRoot 'control-panel-fixture.png'
 $previewArguments = @('--screenshot', ('"{0}"' -f $previewPath), '--root', ('"{0}"' -f $fixtureRoot))
 $preview = Start-Process -FilePath $application -ArgumentList $previewArguments -PassThru -WindowStyle Hidden
-if (!$preview.WaitForExit(20000)) { throw 'Isolated WPF preview timed out.' }
+if (!$preview.WaitForExit(20000)) { Stop-Process -Id $preview.Id -Force -ErrorAction SilentlyContinue; throw 'Isolated WPF preview timed out.' }
+$preview.WaitForExit()
 if ($preview.ExitCode -ne 0 -or !(Test-Path -LiteralPath $previewPath)) { throw 'Isolated WPF preview failed.' }
 for ($i=0; $i -lt $fixtureFiles.Count; $i++) {
     if ((Get-FileHash -LiteralPath $fixtureFiles[$i] -Algorithm SHA256).Hash -ne $beforePreview[$i]) { throw 'Preview export unexpectedly changed a fixture configuration.' }
 }
 Write-Output 'PASS: UI fixtures preserved exact alpha/hover state, positioning, visibility and personal presets.'
+
+} finally {
+    # Delete only the unique directory allocated by this invocation, verified by its token.
+    $resolvedWorkspace = [IO.Path]::GetFullPath($fixtureWorkspace).TrimEnd('\')
+    $temporaryParent = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')
+    if ((Split-Path -Parent $resolvedWorkspace) -ine $temporaryParent -or
+        (Split-Path -Leaf $resolvedWorkspace) -notmatch '^adc-ui-[a-f0-9]{12}$' -or
+        !(Test-Path -LiteralPath $ownershipFile -PathType Leaf) -or
+        [IO.File]::ReadAllText($ownershipFile) -cne $fixtureToken -or
+        ((Get-Item -LiteralPath $resolvedWorkspace).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw 'Refusing to clean an unexpected WPF fixture path.'
+    }
+    Remove-Item -LiteralPath $resolvedWorkspace -Recurse -Force
+}
