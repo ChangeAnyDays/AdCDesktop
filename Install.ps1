@@ -246,8 +246,8 @@ if (!(Test-Path -LiteralPath (Join-Path $panelOutput 'AdCDesktop.exe'))) { throw
 Get-ChildItem -LiteralPath $panelOutput -File | ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $InstallDir ('SpectrumControl\' + $_.Name)) -Force }
 [void][IO.Directory]::CreateDirectory((Join-Path $InstallDir 'scripts'))
 foreach ($file in @('AdCDesktop.Common.psm1','DesktopShell.cs')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot ('scripts\' + $file)) -Destination (Join-Path $InstallDir ('scripts\' + $file)) -Force }
-foreach ($file in @('Start-Desktop.ps1','Restore-Desktop.ps1')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination (Join-Path $InstallDir $file) -Force }
-foreach ($name in @('Start-Desktop','Restore-Desktop')) { [IO.File]::WriteAllText((Join-Path $InstallDir ($name + '.cmd')), "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"%~dp0$name.ps1`" -InstallDir `"%~dp0.`" %*`r`nif errorlevel 1 pause`r`n", [Text.Encoding]::ASCII) }
+foreach ($file in @('Start-Desktop.ps1','Restore-Desktop.ps1','Switch-Desktop.ps1')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination (Join-Path $InstallDir $file) -Force }
+foreach ($name in @('Start-Desktop','Restore-Desktop','Switch-Desktop')) { [IO.File]::WriteAllText((Join-Path $InstallDir ($name + '.cmd')), "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"%~dp0$name.ps1`" -InstallDir `"%~dp0.`" %*`r`nif errorlevel 1 pause`r`n", [Text.Encoding]::ASCII) }
 
 $engine = if ($Mode -eq 'Full' -and (!$Offline -or $WallpaperEnginePath)) { Find-WallpaperEngine $WallpaperEnginePath } else { $null }
 if ($WallpaperProject -and !(Test-Path -LiteralPath $WallpaperProject -PathType Leaf)) { throw 'WallpaperProject must point to a local project.json owned or subscribed to by this user.' }
@@ -289,7 +289,7 @@ $manifest = [ordered]@{
 Write-DesktopJson (Join-Path $InstallDir 'desktop-style.json') $manifest
 if (!$NoShortcuts -and !$Offline) {
     $shell = New-Object -ComObject WScript.Shell
-    foreach ($item in @(@{Name='ADC 总控台';Target=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe');Arguments=('--root "' + $InstallDir + '"')},@{Name='启动AdC桌面美化';Target=(Join-Path $InstallDir 'Start-Desktop.cmd');Arguments=''},@{Name='恢复原桌面';Target=(Join-Path $InstallDir 'Restore-Desktop.cmd');Arguments=''})) {
+    foreach ($item in @(@{Name='ADC 总控台';Target=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe');Arguments=('--root "' + $InstallDir + '"')},@{Name='启动AdC桌面美化';Target=(Join-Path $InstallDir 'Start-Desktop.cmd');Arguments=''},@{Name='完整桌面效果';Target=(Join-Path $InstallDir 'Switch-Desktop.cmd');Arguments='-Mode Full'},@{Name='标准桌面效果';Target=(Join-Path $InstallDir 'Switch-Desktop.cmd');Arguments='-Mode Standard'},@{Name='恢复原桌面';Target=(Join-Path $InstallDir 'Restore-Desktop.cmd');Arguments=''})) {
         $shortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) ($item.Name + '.lnk')
         if (Test-Path -LiteralPath $shortcutPath) { $old = $shell.CreateShortcut($shortcutPath); if ($old.TargetPath -ine $item.Target) { $shortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) ('AdCDesktop-' + $item.Name + '.lnk') } }
         if (Test-Path -LiteralPath $shortcutPath) { $old = $shell.CreateShortcut($shortcutPath); if ($old.TargetPath -ine $item.Target) { Write-Warning "Existing shortcut was left untouched: $shortcutPath"; continue } }

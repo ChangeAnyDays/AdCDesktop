@@ -41,7 +41,7 @@ $iconsBefore = Get-HideIconsValue
 
 & (Join-Path $repositoryRoot 'Install.ps1') -InstallDir $target -Mode ControlPanel -Offline -NoShortcuts -IncludeNexus:$false -PreparedComponentsPath $prepared -PreparedControlPanelPath $panel
 
-foreach ($relative in @('Rainmeter\Rainmeter.exe','Rainmeter\Rainmeter.ini','SpectrumControl\AdCDesktop.exe','desktop-style.json','Start-Desktop.ps1','Restore-Desktop.ps1')) {
+foreach ($relative in @('Rainmeter\Rainmeter.exe','Rainmeter\Rainmeter.ini','SpectrumControl\AdCDesktop.exe','desktop-style.json','Start-Desktop.ps1','Restore-Desktop.ps1','Switch-Desktop.ps1','Switch-Desktop.cmd')) {
     if (!(Test-Path -LiteralPath (Join-Path $target $relative) -PathType Leaf)) { throw "Offline installation did not create $relative" }
 }
 $manifest = Get-Content -LiteralPath (Join-Path $target 'desktop-style.json') -Raw -Encoding UTF8 | ConvertFrom-Json
