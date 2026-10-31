@@ -1,4 +1,4 @@
-# 安装、启动与恢复
+﻿# 安装、启动与恢复
 
 ## 系统与目录
 
@@ -19,7 +19,7 @@
 .\Install.ps1 -Mode Full -InstallDir 'E:\桌面工具' -IncludeNexus -IncludeTaskbar
 ```
 
-安装会下载并校验清单中的归档，安装所需数据、构建原创控制台，创建本机清单与入口。安装本身不启用桌面效果、不添加开机启动。Nexus 官方安装器可能请求 Windows 管理员授权，需要用户在系统提示中允许。
+安装会下载并校验清单中的归档，安装所需数据、构建原创控制台，创建本机清单与入口。直接运行 `Install.ps1` 默认只准备文件，不启动组件；双击 `Install.cmd` 会追加 `-Launch`，安装完成后自动启动 Rainmeter、频谱和 Nexus。`Install-Full.cmd` 同时使用 Full 模式，启动时会隐藏图标并自动隐藏任务栏。不会添加开机启动。Nexus 官方安装器可能请求 Windows 管理员授权，需要用户在系统提示中允许。
 
 同目录重复安装会保留已有模式与频谱配置。若希望从 Full 改用仅控制台模式，先恢复原桌面，再为 ControlPanel 模式选择另一个专用目录。
 
@@ -35,6 +35,7 @@
 | `WallpaperProject` | 用户已拥有的本地 `project.json` |
 | `CacheDir` | 下载缓存，默认源码目录的 `.cache/dependencies` |
 | `NoShortcuts` | 不创建桌面快捷方式 |
+| `Launch` | 安装完成后启动已配置的组件；`Install.cmd` 已默认传入 |
 | `WhatIf` | 只输出安装计划 |
 | `Offline` | 不下载、不执行第三方安装器，仅使用准备好的组件 |
 | `PreparedComponentsPath` | 离线组件目录 |

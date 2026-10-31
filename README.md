@@ -31,9 +31,15 @@
 .\Install.ps1 -InstallDir 'D:\AdCDesktop' -IncludeNexus:$false
 ```
 
-也可双击 `Install.cmd`。没有 D 盘时，不指定目录会使用当前用户的本地应用数据目录。默认安装会准备文件和快捷方式，并加入 Nexus；Nexus 官方安装器可能弹出 Windows 管理员授权，需要点“是”。启动仍由用户选择，不添加开机自启。
+也可直接双击 `Install.cmd`。没有 D 盘时，不指定目录会使用当前用户的本地应用数据目录。默认安装会准备文件和快捷方式，并加入 Nexus；安装结束后自动启动 Rainmeter、频谱和 Nexus。Nexus 官方安装器可能弹出 Windows 管理员授权，需要点“是”。不会添加开机自启。
 
-完成后，双击桌面的 **ADC 总控台**：选配色、拖动滑块，再点击 **应用到桌面**。
+想要连桌面图标、任务栏一起变成完整桌面效果，双击 `Install-Full.cmd`；它会在安装后自动应用 Full 模式并启动组件。
+
+完成后，Nexus 和频谱会自动打开；也可以双击桌面的 **ADC 总控台** 继续调整配色、滑块，再点击 **应用到桌面**。
+
+### 一键完整安装包
+
+从 Releases 下载 `ADC-Desktop-Setup-1.2.5.zip`，解压到任意独立目录（不要解压进安装目录），双击 `Install.cmd`。脚本会自动下载/校验 Rainmeter、皮肤和 Nexus，构建控制台，创建快捷方式并启动。首次 Nexus 安装请在 Windows 管理员提示中点“是”。
 
 ## 新手教程
 

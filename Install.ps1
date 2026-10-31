@@ -10,7 +10,8 @@ param(
     [switch]$IncludeTaskbar,
     [string]$WallpaperEnginePath,
     [string]$WallpaperProject,
-    [switch]$NoShortcuts
+    [switch]$NoShortcuts,
+    [switch]$Launch
 )
 
 $ErrorActionPreference = 'Stop'
@@ -42,6 +43,7 @@ if ($WhatIfPreference) {
         Components = @('Rainmeter portable','Welfare clock skin data','RetrOcOlOr spectrum skin data','AdCDesktop control panel')
         Nexus = [bool]$IncludeNexus; TransparentTaskbar = [bool]$IncludeTaskbar
         DesktopShortcuts = (!$NoShortcuts -and !$Offline)
+        LaunchRequested = [bool]$Launch
         Note = 'No downloads, installers, build, directory creation or desktop changes were performed.'
     }
     return
@@ -294,7 +296,16 @@ if (!$NoShortcuts -and !$Offline) {
         $shortcut = $shell.CreateShortcut($shortcutPath); $shortcut.TargetPath=$item.Target; $shortcut.Arguments=$item.Arguments; $shortcut.WorkingDirectory=$InstallDir; $shortcut.IconLocation=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe') + ',0'; $shortcut.Save()
     }
 }
-Write-Host "Installed in $InstallDir. Nothing was started and the desktop was not changed."
+if ($Launch -and !$Offline) {
+    Write-Host "Installed in $InstallDir. Starting the configured desktop components..."
+    $startScript = Join-Path $InstallDir 'Start-Desktop.ps1'
+    if (!(Test-Path -LiteralPath $startScript -PathType Leaf)) { throw 'Start-Desktop.ps1 is missing; installation files are incomplete.' }
+    & $startScript -InstallDir $InstallDir
+}
+else {
+    Write-Host "Installed in $InstallDir. Nothing was started and the desktop was not changed."
+    if ($Launch -and $Offline) { Write-Warning '-Launch is ignored in Offline mode.' }
+}
 if ($Mode -eq 'Full' -and (!$engine -or !$project)) { Write-Host 'Wallpaper is optional. Install/own Wallpaper Engine and subscribe to Workshop item 3113287126, then re-run with -WallpaperEnginePath and -WallpaperProject if detection is unavailable.' }
 if ($nexusRelative) { Write-Host 'Nexus layout and Dock entries are configured from its Preferences; this installer does not import another user profile.' }
-Write-Output ([pscustomobject]@{InstallDir=$InstallDir;Mode=$Mode;Manifest=(Join-Path $InstallDir 'desktop-style.json');Offline=[bool]$Offline})
+Write-Output ([pscustomobject]@{InstallDir=$InstallDir;Mode=$Mode;Manifest=(Join-Path $InstallDir 'desktop-style.json');Offline=[bool]$Offline;Launched=[bool]($Launch -and !$Offline)})
