@@ -8,8 +8,8 @@ using System.Windows.Forms;
 [assembly: AssemblyTitle("ADC 桌面美化安装程序")]
 [assembly: AssemblyDescription("ADC 桌面美化一键安装程序")]
 [assembly: AssemblyProduct("ADC 桌面美化")]
-[assembly: AssemblyVersion("1.2.5.0")]
-[assembly: AssemblyFileVersion("1.2.5.0")]
+[assembly: AssemblyVersion("1.3.0.0")]
+[assembly: AssemblyFileVersion("1.3.0.0")]
 
 internal static class SetupLauncher
 {
