@@ -82,6 +82,6 @@ WPF 测试实际创建并显示离屏窗口，覆盖两页 × 两尺寸（1080×
 
 ## GitHub CI
 
-1.2.3 的代码提交 `c6c48b5ec7080a861bc22044473409d00e0b905f` 的 Windows CI 已成功：[1.2.3 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41182029521)。
+1.2.4 的代码提交 `6118bd54e535660fdbb75751e118614dc78c06ec` 的 Windows CI 已成功：[1.2.4 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41189317475)。
 
-1.2.2 的代码提交 `fd9d333653360d73cd17b4cb4f088d848faf1bc3` 的 Windows CI 也已成功：[1.2.2 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41180503636)。1.2.4 的提交和 CI 结果以仓库 Actions 页面为准；自动测试不能替代以上未完成的实机验收。
+1.2.3 的代码提交 `c6c48b5ec7080a861bc22044473409d00e0b905f` 的 Windows CI 也已成功：[1.2.3 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41182029521)。1.2.2 的历史记录：[1.2.2 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41180503636)。自动测试不能替代以上未完成的实机验收。
