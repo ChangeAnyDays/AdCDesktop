@@ -142,5 +142,8 @@ finally {
     if ($null -ne $shortcut) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shortcut) }
     if ($null -ne $shell) { [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell) }
 }
+$supportScript = Join-Path $PSScriptRoot 'Restore-Desktop.ps1'
+if (!(Test-Path -LiteralPath $supportScript -PathType Leaf)) { $supportScript = Join-Path (Split-Path -Parent $PSScriptRoot) 'Restore-Desktop.ps1' }
+if (Test-Path -LiteralPath $supportScript -PathType Leaf) { Copy-Item -LiteralPath $supportScript -Destination (Join-Path $InstallDir 'Restore-Desktop.ps1') -Force }
 if ($Launch) { Start-Process -FilePath $application -ArgumentList ('--root "' + $rootArgument + '"') -WindowStyle Normal }
 [pscustomobject]@{Installed=$application;Version=[Diagnostics.FileVersionInfo]::GetVersionInfo($application).FileVersion;Backup=$backup;Shortcut=$shortcutPath}

@@ -23,12 +23,12 @@ foreach($path in $knownPaths){
         try {if($candidate.Path -ieq $path){$again=Get-Process -Id $candidate.Id -ErrorAction SilentlyContinue;if($again -and $again.Path -ieq $path){Stop-Process -InputObject $again -Force;[void]$again.WaitForExit(5000)}}}catch{Write-Warning ("Could not stop this installation's component: " + $path + '. ' + $_.Exception.Message)}
     }
 }
+Initialize-DesktopShell
+$key=[Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced')
+try{$key.SetValue('HideIcons',0,[Microsoft.Win32.RegistryValueKind]::DWord)}finally{$key.Dispose()}
+[AdCDesktop.NativeShell]::RefreshIcons($true)
+[AdCDesktop.NativeShell]::SetTaskbarAutoHide($false)
 if($backup){
-    Initialize-DesktopShell
-    $key=[Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced')
-    try{if($null -eq $backup.hideIcons){$key.DeleteValue('HideIcons',$false)}else{$key.SetValue('HideIcons',[int]$backup.hideIcons,[Microsoft.Win32.RegistryValueKind]::DWord)}}finally{$key.Dispose()}
-    [AdCDesktop.NativeShell]::RefreshIcons($backup.hideIcons -ne 1)
-    [AdCDesktop.NativeShell]::SetTaskbarAutoHide([bool]$backup.taskbarAutoHide)
     $wallpaper=Get-ObjectValue $manifest 'wallpaper'
     $engine=[string](Get-ObjectValue $wallpaper 'enginePath')
     if($engine -and (Get-ObjectValue $backup 'wallpaperApplied' $false)){
