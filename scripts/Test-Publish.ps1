@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param([string]$RepositoryRoot)
 
 $ErrorActionPreference = 'Stop'
@@ -48,7 +48,7 @@ foreach ($relativePath in $tracked) {
     if ($forbiddenExtensions -contains $item.Extension.ToLowerInvariant()) { $issues.Add($normalized + ': packaged executable, third-party asset or personal runtime file.'); continue }
     if ($item.Length -gt 5MB) { $issues.Add($normalized + ': source file exceeds the 5 MB review limit.'); continue }
     if ($item.Extension -in @('.png','.ico')) {
-        if ($normalized -notmatch '^(?:assets/app\.ico|docs/images/control-panel\.png)$') { $issues.Add($normalized + ': binary image is not in the reviewed original-artwork list.') }
+        if ($normalized -notmatch '^(?:assets/(?:app\.ico|app-icon\.png|logo\.png)|docs/images/control-panel\.png)$') { $issues.Add($normalized + ': binary image is not in the reviewed original-artwork list.') }
         continue
     }
     if ($textExtensions -notcontains $item.Extension.ToLowerInvariant() -and $item.Name -notin @('LICENSE','NOTICE','.gitignore','.gitattributes','.editorconfig')) { $issues.Add($normalized + ': unknown file type requires review.'); continue }
