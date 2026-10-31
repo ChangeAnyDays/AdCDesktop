@@ -89,7 +89,7 @@ namespace SpectrumControl
             catch { /* An unrelated native entry must not prevent managing our own entry. */ }
             return new StartupState {
                 Enabled = existing != null, CanChange = present || existing != null,
-                Detail = !present ? "程序文件已缺失，可关闭旧启动项" : nativeStartup ? (existing != null ? "已登记 · 另有原程序自启动" : "ADC 已关闭 · 原程序仍设为自启动") : existing != null ? "已登记 · 下次登录启动" : "已关闭 · 需要时手动启动"
+                Detail = !present ? (existing != null ? "程序文件已缺失，可关闭旧启动项" : "未检测到程序，安装或选择路径后可开启") : nativeStartup ? (existing != null ? "已登记 · 另有原程序自启动" : "ADC 已关闭 · 原程序仍设为自启动") : existing != null ? "已登记 · 下次登录启动" : "已关闭 · 需要时手动启动"
             };
         }
         public void Set(string name, string executable, bool enabled)

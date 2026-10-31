@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.3 (preview)
+
+- 在全新 Windows 环境从 GitHub 源码重新安装后，修复 Nexus 未安装时自启动卡片误显示“程序文件已缺失，可关闭旧启动项”的问题；现在明确显示“未检测到程序，安装或选择路径后可开启”。
+- 新增干净配置的启动项状态回归检查；自启动测试增至 30 项。
+- 已完成一次真实干净安装：移走旧安装和 Nexus 配置后，从 GitHub 下载源码，实际下载 Rainmeter、Welfare、RetrOcOlOr 并安装成功；控制台、时钟、频谱、应用/恢复和自启动开关均实测可用。
+- Windows 自动测试通过：72 后端、45 总控台、30 自启动、313 WPF 检查，包含 16 个布局场景；完整边界见 [测试报告](docs/TEST-REPORT.md)。
+
 ## 1.2.2 (preview)
 
 - 修复首次安装时 `Install-SkinData` 在 StrictMode 下把单元素数组解包成标量、读取 `.Count` 抛 `PropertyNotFoundException` 的问题；用户不再看到 `Install.ps1 : 在此对象上找不到属性“Count”`。

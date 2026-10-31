@@ -1,6 +1,6 @@
-# Windows 11 验证记录 — 1.2.2 测试版
+# Windows 11 验证记录 — 1.2.3 测试版
 
-验证日期：2026-10-31（Asia/Shanghai）。Windows 11 家庭中文版 x64，Build 26200；.NET Framework 4.8，Windows PowerShell 5.1；C# 5 编译器。本文区分隔离自动测试、真实桌面操作和仍未完成的验收项。
+验证日期：2026-10-31（Asia/Shanghai）。Windows 11 家庭中文版 x64，Build 26200；.NET Framework 4.8，Windows PowerShell 5.1；C# 5 编译器。本文区分隔离自动测试、真实干净安装和仍未完成的验收项。
 
 ## 本版修复
 
@@ -24,45 +24,53 @@ FullyQualifiedErrorId : PropertyNotFoundStrict,Install.ps1
 - 从个人方案或桌面读取设置后清空临时基准，后续应用不会继续沿用旧方案的隐藏值。
 - Nexus 路径文件失效时回退到本地/常见安装路径，避免启动项使用旧路径。
 - Nexus 已运行时，点击“打开 Nexus 详细设置”只提示使用 Dock 原生菜单，不再另开一个隐藏实例；Nexus 未运行时，原生 `setup` 入口实际打开了“首选项”窗口并保留 Dock。
+- **1.2.3 干净安装发现**：只安装频谱时，Nexus 根本没装，自启动卡片却显示“程序文件已缺失，可关闭旧启动项”，像是有一个残留启动项。现在明确显示“未检测到程序，安装或选择路径后可开启”。
 
 ## 已执行的自动验证
 
-以下九项在 Windows PowerShell 5.1 上运行，退出码全部为 0。关键结果、UI 截图和 `results.json` 保存在本机 `artifacts/verification/local-1.2.2/`，不提交个人运行状态。
+以下九项在 Windows PowerShell 5.1 上运行，退出码全部为 0。关键结果、UI 截图和 `results.json` 保存在本机 `artifacts/verification/local-1.2.3/`，不提交个人运行状态。
 
 | 检查 | 结果 |
 |---|---|
 | 发布文件扫描 | 50 个预期源码文件，无检测到的个人路径、凭据或第三方运行时资源 |
 | 发布门禁回归 | 9 组通过 |
 | PowerShell 语法与安装 WhatIf | 15 个脚本通过 |
-| 皮肤归档解包（新增） | 单元素 `.rmskin` 在 StrictMode 下不再触发 Count 失败；仅解包白名单皮肤文件 |
+| 皮肤归档解包 | 单元素 `.rmskin` 在 StrictMode 下不再触发 Count 失败；仅解包白名单皮肤文件 |
 | 启动预检 | 冲突、复用、缺失组件等隔离检查通过 |
 | 离线安装回归 | 假组件、Unicode/空格路径、配置保留及模式保护通过 |
-| Windows 控制台编译 | .NET Framework 4.8 / C# 5 通过，文件版本 1.2.2.0 |
-| 控制台测试 | 72 后端、45 总控台、27 自启动、313 WPF 检查通过 |
+| Windows 控制台编译 | .NET Framework 4.8 / C# 5 通过，文件版本 1.2.3.0 |
+| 控制台测试 | 72 后端、45 总控台、30 自启动、313 WPF 检查通过 |
 | 更新安装器 | 真实 EXE 部署、重复更新备份、特殊路径、锁文件失败回退通过 |
 
-另做了一次完整的首次安装夹具：用假的 Rainmeter 程序和控制台、缓存中的 Welfare / RetrOcOlOr 归档运行完整 `Install.ps1`，不再出现 Count 错误，皮肤和清单均生成成功；日志见 `artifacts/verification/local-1.2.2/fresh-install.log`。它验证安装编排和解包，不代表真实下载或第三方安装器已在本轮重跑。
+WPF 测试实际创建并显示离屏窗口，覆盖两页 × 两尺寸（1080×840、940×650）× 四种内容缩放（100/125/150/200%），共 16 场景、32 张截图；默认窗口尺寸下底栏主按钮无需滚动即可见的断言通过。**内容 ScaleTransform 不等于切换系统 DPI**。
 
-WPF 测试实际创建并显示离屏窗口，覆盖两页 × 两尺寸（1080×840、940×650）× 四种内容缩放（100/125/150/200%），共 16 场景、32 张截图；另新增默认窗口尺寸下底栏主按钮无需滚动即可见的断言。**内容 ScaleTransform 不等于切换系统 DPI**。
+## 真实干净安装（本轮）
 
-## 已执行的真实桌面操作
+为避免旧安装、旧启动项和旧 Nexus 配置干扰，本轮做了一次可回滚的干净测试：
 
-- 将 1.2.2 控制台通过 `Install-ControlCenter.ps1` 更新到 `D:\DesktopStyle\SpectrumControl`，从桌面快捷方式实际打开；默认 960 高度下底部主操作可见。
-- 实际启动 Rainmeter 和 Nexus；频谱状态显示“频谱运行中”，Dock 可见。
-- 通过总控台开关真实开启、再关闭 `HKCU\...\Run\AdCDesktop.Spectrum`，每步读回；最后恢复为关闭，未留下 ADC 启动项。
-- 在 Nexus 已运行时点击详细设置，确认只显示原生菜单提示；在 Nexus 未运行时点击，实际打开“首选项”窗口，未导入或覆盖布局。
-- 未修改皮肤、壁纸、Nexus 图标顺序或个人频谱方案。
+1. 备份并移走 `D:\DesktopStyle`，备份桌面 6 个快捷方式、`HKCU\Software\WinSTEP2000`、`HKCU\...\Run` 和旧更新包；随后删除活动目录、快捷方式、`NeXuS` 启动项和 Nexus 配置。
+2. 从 GitHub API 重新下载源码归档和 1.2.2 Release 包；Release 包 SHA-256 与 sidecar 一致（`15A07ECC...`）。
+3. 运行源码中的 `Install.ps1 -InstallDir D:\DesktopStyle`，真实下载 Rainmeter 4.5.28、Welfare 1.1 和 RetrOcOlOr 归档；首次安装成功，没有 Count 错误。
+4. 实际打开 1.2.2 控制台：`频谱未运行`，点击“启动组件”后 Rainmeter、Welfare 时钟和 RetrOcOlOr 频谱均加载；窗口底栏可见。
+5. 实际把宽度从 700 改为 800 并应用，`Visualizer.ini` 写入 `BarWidth=800`；点击“恢复原设置”后回到 700。
+6. 实际开启、读回、关闭 `HKCU\...\Run\AdCDesktop.Spectrum`，均成功，最后保持关闭。
+7. 用 GitHub Release 中的 `Install-ControlCenter.ps1` 覆盖控制台，备份和版本读回成功。
+8. 干净配置下发现 Nexus 未安装时的启动项文案错误；已修复并加入 1.2.3 回归测试。
+
+默认 `Install.ps1` 是 ControlPanel 模式，**不会安装 Nexus、TranslucentTB 或恢复原 Dock**；本轮干净测试因此没有 Dock，这是模式选择的结果，不是崩溃。完整模式（`Install-Full.cmd`）和 Nexus 原生安装器未在本轮重跑。
+
+原始安装和 Nexus 配置完整保存在 `D:\ADC-CleanTest-Backup-20261031-154205`，可回滚。
 
 ## 尚未完成
 
-- 真实 Rainmeter 系统音频响应、参数应用后效果与恢复。
+- 真实 Rainmeter 系统音频响应、参数应用后效果与恢复（本轮只验证了配置写入和窗口加载）。
 - Nexus 关闭标签/延迟气泡后的多个图标逐个悬停、恢复原值和布局保留。
 - Windows 系统 DPI 切换、多显示器、实际小屏窗口操作。
 - 重新登录或重启后两个自启动独立生效、关闭后不启动、原生自启冲突和重复实例。
-- Dock 多次消失的可复现原因和持续稳定性；本版没有重装 Nexus 或覆盖布局。
+- Dock 多次消失的可复现原因和持续稳定性；本轮干净测试没有安装 Nexus。
 
 频谱预览仍是明确标注的模拟音源，不采集系统音频。安装更新包只包含原创控制台与中文教程，第三方程序及皮肤继续由原安装流程准备。
 
 ## GitHub CI
 
-本次修复提交 `fd9d333653360d73cd17b4cb4f088d848faf1bc3` 的 Windows CI 已成功：[Windows 构建与验证记录](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41180503636)。上一版程序提交 `18df2891d4dee7ca237789598234dba333342225` 的历史记录为：[上一版 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41016881621)。自动测试不能替代以上未完成的实机验收。
+1.2.2 的代码提交 `fd9d333653360d73cd17b4cb4f088d848faf1bc3` 的 Windows CI 已成功：[1.2.2 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41180503636)。1.2.3 的提交和 CI 结果以仓库 Actions 页面为准；自动测试不能替代以上未完成的实机验收。

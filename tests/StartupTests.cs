@@ -76,6 +76,16 @@ public static class StartupTests
             int reads = store.Reads;
             Check(!fixture.Read(StartupBackend.NexusName, nexus).CanChange && store.Reads == reads, "Fixture mode must not read live state.");
             Throws(delegate { fixture.Set(StartupBackend.NexusName, nexus, true); }, "Fixture mode must not write startup entries.");
+
+            // A clean ControlPanel install has no Nexus and no startup entry. The
+            // panel must say the program is not installed, not imply a stale entry
+            // exists that the user can close.
+            var cleanStore = new Store();
+            var cleanService = new StartupBackend(cleanStore, true, delegate(string path) { return false; });
+            StartupState cleanNexus = cleanService.Read(StartupBackend.NexusName, nexus);
+            Check(!cleanNexus.CanChange, "A missing Nexus must not be enabled.");
+            Check(cleanNexus.Detail.Contains("未检测到程序"), "A clean profile must name the missing program.");
+            Check(!cleanNexus.Detail.Contains("可关闭旧启动项"), "A clean profile must not imply a stale startup entry.");
             Console.WriteLine("PASS: " + checks + " startup checks"); return 0;
         }
         catch (Exception ex) { Console.Error.WriteLine(ex); return 1; }
