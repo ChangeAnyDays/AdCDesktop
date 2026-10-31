@@ -14,6 +14,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# Nexus is part of the default install. Pass -IncludeNexus:$false for a
+# spectrum-only installation; -IncludeNexus remains accepted for scripts.
+if (!$PSBoundParameters.ContainsKey('IncludeNexus')) { $IncludeNexus = $true }
 Import-Module (Join-Path $PSScriptRoot 'scripts\AdCDesktop.Common.psm1') -Force
 if (!$InstallDir) {
     $InstallDir = if (Test-Path -LiteralPath 'D:\') { 'D:\AdCDesktop' } else { Join-Path $env:LOCALAPPDATA 'AdCDesktop' }
@@ -27,8 +30,8 @@ if ($existingManifest -and !$PSBoundParameters.ContainsKey('Mode')) { $Mode = [s
 if ($existingManifest -and (Get-ObjectValue $existingManifest 'mode') -eq 'Full' -and $Mode -eq 'ControlPanel') {
     throw 'A Full installation cannot be changed to ControlPanel in place. Restore its desktop first, then choose a separate installation directory for ControlPanel mode.'
 }
-if ($IncludeNexus -or $IncludeTaskbar -or $WallpaperEnginePath -or $WallpaperProject) {
-    if ($Mode -ne 'Full') { throw 'Optional desktop applications and wallpaper require -Mode Full.' }
+if ($IncludeTaskbar -or $WallpaperEnginePath -or $WallpaperProject) {
+    if ($Mode -ne 'Full') { throw 'TranslucentTB and wallpaper require -Mode Full.' }
 }
 
 # This branch must remain before every filesystem, registry, native or process mutation.
@@ -152,12 +155,27 @@ if ($newSpectrum) {
     Set-IniValue $spectrumIni 'MeterWaweBar' 'Y' '0'
     Set-IniValue $spectrumIni 'MeasureAudio' 'Sensitivity' '45'
 }
+$clockVariables = Join-Path $InstallDir 'Rainmeter\Skins\Welfare\@Resources\Variables.inc'
 if ($newClock) {
     Set-IniValue $clockIni 'Rainmeter' 'LeftMouseDoubleClickAction' '!ToggleConfig "Welfare\Settings" "Settings.ini"'
-    $clockVariables = Join-Path $InstallDir 'Rainmeter\Skins\Welfare\@Resources\Variables.inc'
-    Set-IniValue $clockVariables 'Variables' 'Format' '#H'
+    Set-IniValue $clockVariables 'Variables' 'Format' '%H'
     Set-IniValue $clockVariables 'Variables' 'Hidden' '0'
     Set-IniValue $clockVariables 'Variables' 'Hidden2' '1'
+}
+# Welfare 1.1 uses %#Format#:%M and Hidden=#Hidden#, which Rainmeter 4.5
+# renders as garbled text and shows both 12h and 24h meters. Repair only the
+# broken layout so existing custom clocks are left alone.
+if ((Test-Path -LiteralPath $clockIni) -and (Test-Path -LiteralPath $clockVariables)) {
+    $clockText = Get-Content -LiteralPath $clockIni -Raw -Encoding UTF8
+    if ($clockText -match '(?m)^Format=%#Format#:%M') {
+        Set-IniValue $clockIni 'MeasureTime' 'Format' '%H:%M'
+        Set-IniValue $clockIni 'Meter24hTime' 'Hidden' '0'
+        Set-IniValue $clockIni 'Meter12hTime' 'Hidden' '1'
+        Set-IniValue $clockVariables 'Variables' 'Format' '%H'
+    }
+    if ($clockText -match '@include2=#@#Language\\#Language#\.inc') {
+        Set-IniValue $clockIni 'Variables' '@include2' '#@#Language\English.inc'
+    }
 }
 
 $tbbRelative = [string](Get-ObjectValue (Get-ObjectValue $existingManifest 'components') 'translucenttb')
@@ -200,6 +218,18 @@ if ($IncludeNexus) {
         if ($run) { try { $value = [string]$run.GetValue('Nexus'); if ($value -like ('*' + $nexusExe + '*')) { $run.DeleteValue('Nexus', $false) } } finally { $run.Dispose() } }
         $profile = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\WinSTEP2000\Nexus')
         try { $profile.SetValue('GenAutoRun','False',[Microsoft.Win32.RegistryValueKind]::String) } finally { $profile.Dispose() }
+        # A fresh Nexus profile starts as a top dock (orientation 2). Put the
+        # first Dock at the bottom so the default install is immediately usable;
+        # existing profiles never reach this block.
+        $docks = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\WinSTEP2000\NeXuS\Docks', $true)
+        if ($docks) {
+            try {
+                if ([string]$docks.GetValue('DockOrientation1') -ne '3') {
+                    $docks.SetValue('DockOrientation1','3',[Microsoft.Win32.RegistryValueKind]::String)
+                    $docks.SetValue('DockDocked1','True',[Microsoft.Win32.RegistryValueKind]::String)
+                }
+            } finally { $docks.Dispose() }
+        }
     }
     $nexusRelative = 'Nexus\Nexus.exe'
 }

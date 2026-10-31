@@ -1,4 +1,4 @@
-# Windows 11 验证记录 — 1.2.3 测试版
+# Windows 11 验证记录 — 1.2.4 测试版
 
 验证日期：2026-10-31（Asia/Shanghai）。Windows 11 家庭中文版 x64，Build 26200；.NET Framework 4.8，Windows PowerShell 5.1；C# 5 编译器。本文区分隔离自动测试、真实干净安装和仍未完成的验收项。
 
@@ -26,9 +26,16 @@ FullyQualifiedErrorId : PropertyNotFoundStrict,Install.ps1
 - Nexus 已运行时，点击“打开 Nexus 详细设置”只提示使用 Dock 原生菜单，不再另开一个隐藏实例；Nexus 未运行时，原生 `setup` 入口实际打开了“首选项”窗口并保留 Dock。
 - **1.2.3 干净安装发现**：只安装频谱时，Nexus 根本没装，自启动卡片却显示“程序文件已缺失，可关闭旧启动项”，像是有一个残留启动项。现在明确显示“未检测到程序，安装或选择路径后可开启”。
 
+### 1.2.4 默认安装 Nexus 与时钟乱码
+
+- `Install.ps1` 不传参数时默认 `IncludeNexus = true`；`Install.cmd` 直接双击也会安装 Nexus。只要频谱时使用 `-IncludeNexus:$false`。Nexus 官方安装器可能请求管理员授权。
+- 新安装的 Nexus 配置默认把第一个 Dock 放到屏幕底部（`DockOrientation1=3`），不再落在屏幕顶部；已有 Nexus 配置不会被覆盖。
+- Welfare 1.1 的 `Format=%#Format#:%M` 在 Rainmeter 4.5 下会渲染成乱码，同时 `Hidden=#Hidden#` 让 12/24 小时两个表盘一起显示。安装器现在把时间格式改为 `%H:%M`，显式设置 24h 表盘 `Hidden=0`、12h 表盘 `Hidden=1`，并修复 `@include2` 的语言文件路径。
+- 修复是幂等的：先人为还原损坏的 `Clock.ini`，再运行安装器，文件被正确改写；Rainmeter 刷新后时钟显示为正常的 `17:30`。
+
 ## 已执行的自动验证
 
-以下九项在 Windows PowerShell 5.1 上运行，退出码全部为 0。关键结果、UI 截图和 `results.json` 保存在本机 `artifacts/verification/local-1.2.3/`，不提交个人运行状态。
+以下九项在 Windows PowerShell 5.1 上运行，退出码全部为 0。关键结果、UI 截图和 `results.json` 保存在本机 `artifacts/verification/local-1.2.4/`，不提交个人运行状态。
 
 | 检查 | 结果 |
 |---|---|
@@ -38,7 +45,7 @@ FullyQualifiedErrorId : PropertyNotFoundStrict,Install.ps1
 | 皮肤归档解包 | 单元素 `.rmskin` 在 StrictMode 下不再触发 Count 失败；仅解包白名单皮肤文件 |
 | 启动预检 | 冲突、复用、缺失组件等隔离检查通过 |
 | 离线安装回归 | 假组件、Unicode/空格路径、配置保留及模式保护通过 |
-| Windows 控制台编译 | .NET Framework 4.8 / C# 5 通过，文件版本 1.2.3.0 |
+| Windows 控制台编译 | .NET Framework 4.8 / C# 5 通过，文件版本 1.2.4.0 |
 | 控制台测试 | 72 后端、45 总控台、30 自启动、313 WPF 检查通过 |
 | 更新安装器 | 真实 EXE 部署、重复更新备份、特殊路径、锁文件失败回退通过 |
 
@@ -56,8 +63,10 @@ WPF 测试实际创建并显示离屏窗口，覆盖两页 × 两尺寸（1080×
 6. 实际开启、读回、关闭 `HKCU\...\Run\AdCDesktop.Spectrum`，均成功，最后保持关闭。
 7. 用 GitHub Release 中的 `Install-ControlCenter.ps1` 覆盖控制台，备份和版本读回成功。
 8. 干净配置下发现 Nexus 未安装时的启动项文案错误；已修复并加入 1.2.3 回归测试。
+9. 1.2.4 默认安装实际运行了 Nexus 26.9 官方安装器（需要 Windows 管理员授权），安装完成并写入 `desktop-style.json`；启动后 Dock 位于屏幕底部。安装器同时修复了 Welfare 时钟的乱码格式。
+10. 把损坏的时钟配置重新写回后再次运行安装器，`Format=%H:%M`、`Hidden=0/1` 和语言 include 被正确修复，Rainmeter 刷新后显示正常时间。
 
-默认 `Install.ps1` 是 ControlPanel 模式，**不会安装 Nexus、TranslucentTB 或恢复原 Dock**；本轮干净测试因此没有 Dock，这是模式选择的结果，不是崩溃。完整模式（`Install-Full.cmd`）和 Nexus 原生安装器未在本轮重跑。
+1.2.4 起默认 `Install.ps1` **包含 Nexus**，只装频谱需显式传 `-IncludeNexus:$false`。默认 Nexus 配置的 Dock 在底部，但图标和应用列表是全新的；需要原 Dock 时可用备份恢复，或在 Nexus 中重新添加常用应用。
 
 原始安装和 Nexus 配置完整保存在 `D:\ADC-CleanTest-Backup-20261031-154205`，可回滚。
 
@@ -67,7 +76,7 @@ WPF 测试实际创建并显示离屏窗口，覆盖两页 × 两尺寸（1080×
 - Nexus 关闭标签/延迟气泡后的多个图标逐个悬停、恢复原值和布局保留。
 - Windows 系统 DPI 切换、多显示器、实际小屏窗口操作。
 - 重新登录或重启后两个自启动独立生效、关闭后不启动、原生自启冲突和重复实例。
-- Dock 多次消失的可复现原因和持续稳定性；本轮干净测试没有安装 Nexus。
+- Dock 多次消失的可复现原因和持续稳定性；本轮只验证了全新安装和底部位置，没有验证长期运行。
 
 频谱预览仍是明确标注的模拟音源，不采集系统音频。安装更新包只包含原创控制台与中文教程，第三方程序及皮肤继续由原安装流程准备。
 
@@ -75,4 +84,4 @@ WPF 测试实际创建并显示离屏窗口，覆盖两页 × 两尺寸（1080×
 
 1.2.3 的代码提交 `c6c48b5ec7080a861bc22044473409d00e0b905f` 的 Windows CI 已成功：[1.2.3 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41182029521)。
 
-1.2.2 的代码提交 `fd9d333653360d73cd17b4cb4f088d848faf1bc3` 的 Windows CI 也已成功：[1.2.2 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41180503636)。自动测试不能替代以上未完成的实机验收。
+1.2.2 的代码提交 `fd9d333653360d73cd17b4cb4f088d848faf1bc3` 的 Windows CI 也已成功：[1.2.2 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41180503636)。1.2.4 的提交和 CI 结果以仓库 Actions 页面为准；自动测试不能替代以上未完成的实机验收。

@@ -9,14 +9,17 @@
 ## 安装模式
 
 ```powershell
-# 频谱控制台、Rainmeter、时钟和频谱皮肤
+# 默认：频谱控制台、Rainmeter、时钟/频谱皮肤和 Nexus
 .\Install.ps1 -InstallDir 'E:\桌面工具'
 
-# 完整桌面：再选应用栏和透明任务栏
+# 只装频谱，不装 Nexus
+.\Install.ps1 -InstallDir 'E:\桌面工具' -IncludeNexus:$false
+
+# 完整桌面：再加透明任务栏
 .\Install.ps1 -Mode Full -InstallDir 'E:\桌面工具' -IncludeNexus -IncludeTaskbar
 ```
 
-安装会下载并校验清单中的归档，安装所需数据、构建原创控制台，创建本机清单与入口。安装本身不启用桌面效果、不添加开机启动。
+安装会下载并校验清单中的归档，安装所需数据、构建原创控制台，创建本机清单与入口。安装本身不启用桌面效果、不添加开机启动。Nexus 官方安装器可能请求 Windows 管理员授权，需要用户在系统提示中允许。
 
 同目录重复安装会保留已有模式与频谱配置。若希望从 Full 改用仅控制台模式，先恢复原桌面，再为 ControlPanel 模式选择另一个专用目录。
 
@@ -26,7 +29,7 @@
 |---|---|
 | `InstallDir` | 目标目录 |
 | `Mode` | `ControlPanel`（默认）或 `Full` |
-| `IncludeNexus` | Full 模式下安装 Nexus |
+| `IncludeNexus` | 默认开启；传 `-IncludeNexus:$false` 可只装频谱 |
 | `IncludeTaskbar` | Full 模式下安装 Windows 11 透明任务栏组件 |
 | `WallpaperEnginePath` | 已安装 Wallpaper Engine 的目录或主程序 |
 | `WallpaperProject` | 用户已拥有的本地 `project.json` |
@@ -39,9 +42,7 @@
 
 ## Nexus 首次布局
 
-Nexus 使用全局的用户配置，安装器不会把另一台电脑的注册表导入到你的账户中。如果已发现现有 Nexus 配置，会保留它并停止第二份自动安装。
-
-新装完成后，按 [Nexus 布局指南](NEXUS.md) 设置底部居中、透明背景和自己的常用软件。Nexus 本身的管理员确认属于 Windows 安装过程，需要用户在系统提示中决定。
+Nexus 使用全局的用户配置，安装器不会把另一台电脑的注册表导入到你的账户中。如果已发现现有 Nexus 配置，会保留它并停止第二份自动安装。新装时安装器把第一个 Dock 放到屏幕底部，避免落在顶部边缘；之后的图标和应用仍按 [Nexus 布局指南](NEXUS.md) 自行调整。Nexus 本身的管理员确认属于 Windows 安装过程，需要用户在系统提示中决定。
 
 ## 同款动态壁纸
 
@@ -82,7 +83,7 @@ PreparedAdCDesktop/
 - **打开面板并启动组合**：运行 `Start-Desktop.ps1 -ControlPanel`。
 - **恢复桌面**：双击 `Restore-Desktop.cmd`。只管理清单里、位于本安装目录内的进程。
 
-Full 模式启动时会先备份本机图标显示、任务栏自动隐藏和当前壁纸，再应用隐藏图标及任务栏自动隐藏。ControlPanel 模式只启用 Rainmeter，不调整这些系统外观。
+Full 模式启动时会先备份本机图标显示、任务栏自动隐藏和当前壁纸，再应用隐藏图标及任务栏自动隐藏。ControlPanel 模式只启动清单中的 Rainmeter 和 Nexus，不调整这些系统外观。
 
 若 Wallpaper Engine 原来正在运行，脚本需要能可靠读取原壁纸才能替换；无法识别时保留原壁纸并提示，其他组件仍可使用。恢复动态壁纸使用官方控制指令，不强制结束其进程。
 

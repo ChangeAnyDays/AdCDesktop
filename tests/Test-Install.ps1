@@ -39,7 +39,7 @@ $shortcutsBefore = @(Get-DesktopShortcutNames)
 $processIdsBefore = @(Get-DesktopProcessIds)
 $iconsBefore = Get-HideIconsValue
 
-& (Join-Path $repositoryRoot 'Install.ps1') -InstallDir $target -Mode ControlPanel -Offline -NoShortcuts -PreparedComponentsPath $prepared -PreparedControlPanelPath $panel
+& (Join-Path $repositoryRoot 'Install.ps1') -InstallDir $target -Mode ControlPanel -Offline -NoShortcuts -IncludeNexus:$false -PreparedComponentsPath $prepared -PreparedControlPanelPath $panel
 
 foreach ($relative in @('Rainmeter\Rainmeter.exe','Rainmeter\Rainmeter.ini','SpectrumControl\AdCDesktop.exe','desktop-style.json','Start-Desktop.ps1','Restore-Desktop.ps1')) {
     if (!(Test-Path -LiteralPath (Join-Path $target $relative) -PathType Leaf)) { throw "Offline installation did not create $relative" }
@@ -125,7 +125,7 @@ if ($reinstalledManifest.mode -cne 'Full' -or $reinstalledManifest.components.ne
 $manifestHashBeforeDowngrade = (Get-FileHash -LiteralPath $fullManifestPath -Algorithm SHA256).Hash
 $downgradeRejected = $false
 try {
-    & (Join-Path $repositoryRoot 'Install.ps1') -InstallDir $fullTarget -Mode ControlPanel -Offline -NoShortcuts -PreparedComponentsPath $prepared -PreparedControlPanelPath $panel
+    & (Join-Path $repositoryRoot 'Install.ps1') -InstallDir $fullTarget -Mode ControlPanel -Offline -NoShortcuts -IncludeNexus:$false -PreparedComponentsPath $prepared -PreparedControlPanelPath $panel
 } catch {
     if ($_.Exception.Message -notmatch 'Full installation cannot be changed to ControlPanel in place') { throw }
     $downgradeRejected = $true

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.4 (preview)
+
+- **默认安装包含 Nexus**：`Install.cmd` / 不传参数的 `Install.ps1` 现在会安装 Rainmeter、皮肤、控制台和 Nexus；只要频谱可用 `-IncludeNexus:$false`。Nexus 官方安装器可能请求 Windows 管理员授权。
+- 新安装的 Nexus 默认 Dock 方向改为底部（`DockOrientation1=3`），不再落在屏幕顶部；不覆盖已有 Nexus 配置。
+- 修复 Welfare 时钟乱码：`Format=%#Format#:%M` 在 Rainmeter 4.5 下会产生乱码并同时显示 12/24 小时。安装器会改写为 `%H:%M`、显式隐藏 12 小时表盘，并修复 `@include2` 的语言文件路径。
+- 安装器对已存在的损坏时钟配置做幂等修复；新安装和重新安装都会生效。
+- 测试更新：默认安装的离线夹具显式使用 `-IncludeNexus:$false`；完整模式继续覆盖 Nexus。
+- Windows 自动测试：72 后端、45 总控台、30 自启动、313 WPF 检查；CI 以仓库 Actions 为准。
+
 ## 1.2.3 (preview)
 
 - 在全新 Windows 环境从 GitHub 源码重新安装后，修复 Nexus 未安装时自启动卡片误显示“程序文件已缺失，可关闭旧启动项”的问题；现在明确显示“未检测到程序，安装或选择路径后可开启”。

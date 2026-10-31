@@ -2,7 +2,7 @@
 
 在一个窗口中管理音乐频谱和 Nexus 启动栏。频谱页面提供模拟音源预览；Nexus 页面提供启动、原生详细设置入口和悬停文字开关。仍支持选装透明任务栏和动态壁纸。
 
-> 1.2.3 测试版：已在 Windows 11 实际构建、安装并运行控制台，自动测试包含 313 项 WPF 交互与布局检查。预览仍使用模拟音源；Nexus 悬停效果、设置窗口响应和重启登录尚未完整验收，详见[测试报告](docs/TEST-REPORT.md)。
+> 1.2.4 测试版：已在 Windows 11 实际构建、安装并运行控制台，自动测试包含 313 项 WPF 交互与布局检查。预览仍使用模拟音源；Nexus 悬停效果、设置窗口响应和重启登录尚未完整验收，详见[测试报告](docs/TEST-REPORT.md)。
 
 原 1.0 频谱界面参考（不代表新的总控台布局）：
 
@@ -12,7 +12,7 @@
 
 - **ADC 总控台**：WPF / .NET Framework 4.8，提供配色预设、颜色选择、滑块、定位按钮、个人方案和恢复原设置。
 - **可重复的安装流程**：固定版本下载、SHA-256 校验、自选安装位置、桌面快捷方式、启动和恢复入口。
-- **两个安装模式**：只装频谱控制台，或选装完整桌面组合。
+- **默认安装**：Rainmeter、时钟/频谱皮肤、控制台和 Nexus；`-IncludeNexus:$false` 可只装频谱。完整模式再加 TranslucentTB 和动态壁纸。
 - **开发与发布材料**：源码、构建脚本、隔离测试、GitHub Actions、第三方依赖清单。
 
 本仓库提供原创代码和安装编排。第三方软件、皮肤、字体、壁纸以及机器上的个人设置都不随源码分发。
@@ -24,11 +24,14 @@
 下载并解压仓库后，打开 PowerShell，进入项目目录运行：
 
 ```powershell
-# 默认：只安装 Rainmeter、所需皮肤和频谱控制台
+# 默认：Rainmeter、所需皮肤、频谱控制台和 Nexus 启动栏
 .\Install.ps1 -InstallDir 'D:\AdCDesktop'
+
+# 只装频谱/控制台，不装 Nexus
+.\Install.ps1 -InstallDir 'D:\AdCDesktop' -IncludeNexus:$false
 ```
 
-也可双击 `Install.cmd`。没有 D 盘时，不指定目录会使用当前用户的本地应用数据目录。安装默认准备文件和快捷方式；启动由用户选择，不添加开机自启。
+也可双击 `Install.cmd`。没有 D 盘时，不指定目录会使用当前用户的本地应用数据目录。默认安装会准备文件和快捷方式，并加入 Nexus；Nexus 官方安装器可能弹出 Windows 管理员授权，需要点“是”。启动仍由用户选择，不添加开机自启。
 
 完成后，双击桌面的 **ADC 总控台**：选配色、拖动滑块，再点击 **应用到桌面**。
 
@@ -56,7 +59,7 @@
 .\scripts\Install-ControlCenter.ps1 -InstallDir 'D:\AdCDesktop' -Launch
 ```
 
-开发者可运行 `.\scripts\Build-Package.ps1` 生成 `artifacts/packages/ADC-ControlCenter-1.2.3.0.zip` 和 SHA-256 校验文件。解压更新包后双击其中的 `Install.cmd`，选择已有安装根目录即可。无需重装 Rainmeter 或 Nexus；包内不含第三方程序或皮肤。
+开发者可运行 `.\scripts\Build-Package.ps1` 生成 `artifacts/packages/ADC-ControlCenter-1.2.4.0.zip` 和 SHA-256 校验文件。解压更新包后双击其中的 `Install.cmd`，选择已有安装根目录即可。无需重装 Rainmeter 或 Nexus；包内不含第三方程序或皮肤。
 
 ## 完整桌面组合
 
