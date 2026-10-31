@@ -4,17 +4,168 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AdCat 桌面 · 快速上手</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1423;--card:#112237;--ink:#eaf2ff;--muted:#adc0d4;--line:#29445e;--accent:#72e8eb}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 "Microsoft YaHei UI","PingFang SC",sans-serif}main{max-width:960px;margin:auto;padding:52px 28px 64px}header{padding-bottom:32px;border-bottom:1px solid var(--line)}.eyebrow{font-size:13px;letter-spacing:2px;color:var(--accent)}h1{font-size:40px;line-height:1.3;margin:12px 0}h2{font-size:25px;line-height:1.4;margin:0 0 18px}h3{font-size:18px;margin:20px 0 8px}p{margin:8px 0 16px}.sub{color:var(--muted);max-width:720px}nav{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0 0}a{color:var(--accent);text-underline-offset:4px}nav a{text-decoration:none;border:1px solid var(--line);padding:7px 14px;border-radius:8px}section{scroll-margin-top:24px;margin-top:26px;background:var(--card);padding:28px;border:1px solid var(--line);border-radius:16px}.num{color:var(--accent);margin-right:10px}.note{background:#122f3a;border-left:3px solid var(--accent);padding:12px 16px;border-radius:4px;margin:18px 0}.beta{color:#efce91;font-size:14px}.steps{padding-left:24px}.steps li{padding-left:6px;margin:10px 0}strong{color:#fff}code{font:14px Consolas,monospace;background:#071526;padding:3px 6px;border-radius:4px;overflow-wrap:anywhere}table{border-collapse:collapse;width:100%;margin:16px 0;font-size:15px}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--accent);font-weight:500}td:first-child{width:30%}.actions{display:grid;grid-template-columns:1fr 1fr;gap:14px}.mini{background:#0b1b2d;padding:18px;border-radius:10px}.mini h3{margin:0 0 6px}.flow{color:var(--accent);font-weight:600}.small{font-size:14px;color:var(--muted)}footer{margin-top:32px;color:var(--muted);font-size:14px}@media(max-width:620px){main{padding:28px 16px}h1{font-size:30px}section{padding:20px}.actions{grid-template-columns:1fr}th,td{padding:9px 6px}td:first-child{width:34%}}@media print{ :root{color-scheme:light}body{background:#fff;color:#16273a;font-size:11pt}main{padding:0;max-width:none}header{padding-bottom:12px}h1{font-size:28pt}h2{font-size:18pt}section{background:#fff;border:1px solid #ccc;border-radius:0;padding:18px;margin-top:16px;break-inside:avoid}strong{color:#16273a}.sub,.small,footer,.beta{color:#465a6b}a,.num,.eyebrow,.flow,th{color:#15626a}nav{display:none}.mini,.note,code{background:#f1f6f7}th,td{border-color:#ccc}.actions{display:block}.mini{margin:8px 0}}
+:root{color-scheme:light;--bg:#f4f1eb;--paper:#fbf9f4;--ink:#1b1b1b;--muted:#6e6a63;--faint:#8c867c;--line:#d8d0c4;--sage:#6f8f7c;--sage-soft:#e8efe9;--sand:#ede7dc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 "Microsoft YaHei UI","PingFang SC",sans-serif}
+main{max-width:980px;margin:auto;padding:54px 28px 72px}
+header{padding-bottom:30px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:13px;letter-spacing:2px;color:var(--sage)}
+h1{font-size:44px;line-height:1.25;margin:12px 0 10px;letter-spacing:-1px}
+h2{font-size:25px;line-height:1.4;margin:0 0 18px}
+h3{font-size:18px;margin:22px 0 8px}
+p{margin:8px 0 15px}
+.sub{color:var(--muted);max-width:760px;font-size:18px}
+.badge{display:inline-block;background:var(--sage-soft);color:#3f5c4b;font-size:13px;padding:4px 11px;border-radius:20px;margin-top:8px}
+nav{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 0}
+a{color:#4f6b5b;text-underline-offset:4px}
+nav a{text-decoration:none;border:1px solid var(--line);background:var(--paper);padding:7px 14px;border-radius:20px;color:var(--ink);font-size:14px}
+section{scroll-margin-top:24px;margin-top:26px;background:var(--paper);padding:30px;border:1px solid var(--line);border-radius:18px}
+.num{color:var(--sage);margin-right:10px}
+.note{background:var(--sage-soft);border-left:3px solid var(--sage);padding:12px 16px;border-radius:8px;margin:18px 0;color:#33463a}
+.warn{background:#f7efe1;border-left:3px solid #b58a4a;padding:12px 16px;border-radius:8px;margin:18px 0;color:#5c4a2c}
+.steps{padding-left:24px}.steps li{padding-left:6px;margin:10px 0}
+strong{color:#111}
+code{font:14px Consolas,monospace;background:#eee8dd;padding:3px 6px;border-radius:4px;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:15px}
+th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:#40594a;font-weight:600}
+td:first-child{width:32%}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:#f7f3ec;border:1px solid var(--line);padding:18px;border-radius:12px}
+.card h3{margin:0 0 6px}
+.flow{color:var(--sage);font-weight:600}
+.small{font-size:14px;color:var(--muted)}
+.kbd{display:inline-block;border:1px solid var(--line);background:#fff;border-radius:5px;padding:0 6px;font-size:13px}
+footer{margin-top:34px;color:var(--faint);font-size:14px}
+@media(max-width:640px){main{padding:28px 16px}h1{font-size:32px}section{padding:20px}.grid{grid-template-columns:1fr}th,td{padding:9px 6px}td:first-child{width:36%}}
+@media print{:root{color-scheme:light}body{background:#fff;color:#111}main{padding:0}section{break-inside:avoid;border:1px solid #ccc}nav{display:none}a{color:#111}}
 </style>
 </head>
 <body><main>
-<header><div class="eyebrow">ADCAT DESKTOP · 1.3.1</div><h1>第一次用，从这里开始。</h1><p class="sub">用一个总控台调整音乐频谱、管理 Nexus 启动栏。按下面的步骤操作，先看到效果，再应用到桌面。</p><p class="beta">测试版说明：已完成交叉编译与独立逻辑测试；Windows 界面和真实 Nexus 联动仍待实机验证。</p><nav aria-label="教程目录"><a href="#open">① 打开程序</a><a href="#startup">开机自启动</a><a href="#spectrum">② 调整频谱</a><a href="#nexus">③ 关闭大字</a><a href="#restore">④ 撤销与恢复</a><a href="#faq">常见问题</a></nav></header>
-<section id="open"><h2><span class="num">01</span>第一次打开</h2><ol class="steps"><li>先把测试包<strong>完整解压</strong>，关闭已经打开的旧控制台。</li><li>双击 <code>AdCDesktop.exe</code>。这是控制台更新包，仍需原来安装好的 Rainmeter 和频谱皮肤。</li><li>如果出现目录选择框，选择<strong>原桌面工具的安装根目录</strong>，也就是里面能看到 <code>Rainmeter</code> 文件夹的那一层。不要选择 Rainmeter 文件夹内部，也不要选择这次下载的压缩包目录。</li><li>窗口标题为<strong>「AdCat 桌面」</strong>，上方有「音乐频谱」「Nexus 启动栏」两个页面。</li></ol><div class="actions"><div class="mini"><h3>音乐频谱</h3><p class="small">左侧看模拟预览、选配色；右侧调参数；底部应用到桌面。</p></div><div class="mini"><h3>Nexus 启动栏</h3><p class="small">上方启动或打开详细设置；下方管理悬停文字。</p></div></div><div class="note">可以先在解压目录里试用新版。确认满意后，备份旧的 <code>AdCDesktop.exe</code> 和它的 <code>.config</code> 文件，再把新版这两个文件及 <code>QuickStart.html</code> 放进原安装目录的 <code>SpectrumControl</code> 文件夹。</div></section>
-<section id="startup"><h2>频谱、Nexus，各自决定要不要自启动</h2><p>窗口顶部有两个独立开关：<strong>「频谱 · 开机自启动」</strong>与<strong>「Nexus · 开机自启动」</strong>。</p><ol class="steps"><li>点击开关，绿色表示已登记自启动，灰色表示 AdCat 自启动关闭。开关<strong>立即保存</strong>，不用再点“应用到桌面”。</li><li>下次登录当前 Windows 账户时生效，不会立刻启动或退出程序，也不会自动打开总控台。</li><li>保存失败会显示原因并恢复读回的状态；未安装的组件不能开启。Nexus 路径可以在 Nexus 页面里选择。</li></ol><div class="note"><strong>这些开关只管理 AdCat 创建的启动项。</strong>若原程序里也开启过自启动，关闭 AdCat 开关后仍可能启动。页面会提示已识别的原程序自启动，点击“系统启动项”检查，或在 Rainmeter / Nexus 原生设置里关闭，避免重复启动。</div><p>频谱开关启动的是 Rainmeter，会恢复它已经保存的皮肤（包括可能启用的时钟）。如果希望登录后看到频谱，先勾选“显示频谱”并应用。</p><p class="small">Windows 的启动应用设置可以覆盖登记状态。若开关显示“已登记”但登录后未启动，请点“系统启动项”检查是否被禁用。移动或删除安装目录前，先关闭对应自启动开关；移动后重新设置。无需管理员权限。</p></section>
-<section id="spectrum"><h2><span class="num">02</span>做出自己喜欢的频谱</h2><p class="flow">选配色 → 拖动滑块 → 看预览 → 应用到桌面</p><ol class="steps"><li>点击「音乐频谱」，从左侧选择一个配色，例如「冰川蓝」。</li><li>拖动右侧滑块。左侧会预览样式变化；也可以直接输入数值后按回车。</li><li>勾选「显示频谱」。需要放在屏幕中间时，点击「水平居中」；需要放在启动栏附近时，点击「应用栏上方」后再微调 X、Y。</li><li>点击右下角<strong>「应用到桌面」</strong>，播放音乐，观察实际效果。</li><li>满意后点击「保存我的方案」，以后可以通过「读取我的方案」找回。</li></ol><table><thead><tr><th>参数</th><th>怎样理解</th></tr></thead><tbody><tr><td>频谱宽度 / 波动高度</td><td>控制横向长度与波动范围。太挡画面就调小。</td></tr><tr><td>声音灵敏度</td><td>数值越高，小声音也更容易让频谱起伏。</td></tr><tr><td>回落平滑度</td><td>数值越高，声音减弱后回落越慢；0 表示不增加回落延迟。</td></tr><tr><td>不透明度</td><td>100% 最明显，0% 完全透明。</td></tr><tr><td>X / Y</td><td>在主屏幕常见布局中，X 越大越靠右，Y 越大越靠下。</td></tr><tr><td>鼠标穿透</td><td>点击可穿过频谱。开启时，下面的鼠标悬停效果不可用。</td></tr></tbody></table><p class="small">不知从哪里调起，可先试：宽度 700、高度 60、灵敏度 45、平滑度 150、不透明度 70%，再按自己的屏幕调整。</p><div class="note"><strong>预览采用模拟音源，不采集系统音乐。</strong>它用来比较参数和配色，实际桌面波形以 Rainmeter 为准。「暂停动画」只暂停预览；「模拟静音」只演示回落，都不会暂停你的音乐或关闭桌面频谱。</div><p>「读取我的方案」只把参数载入面板，仍需点击「应用到桌面」。切到 Nexus 页面不会丢掉尚未应用的频谱修改。</p></section>
-<section id="nexus"><h2><span class="num">03</span>关闭鼠标碰到图标就弹出的字</h2><p>有两种文字：<strong>立即出现的图标名称</strong>，以及<strong>停留一会儿出现的信息气泡</strong>。要完全清爽，两种都关闭。</p><ol class="steps"><li>点击「Nexus 启动栏」。未找到程序时，点击「选择 Nexus.exe」，找到已经安装的 Nexus 程序。</li><li>从 Nexus 图标的右键菜单<strong>退出 Nexus</strong>。不要只关闭它的设置窗口。</li><li>回到总控台点击<strong>「重新读取」</strong>，再点击<strong>「关闭所有悬停文字」</strong>。</li><li>看到「文字设置已保存并校验」后，点击<strong>「启动 Nexus」</strong>。</li><li>把鼠标移到多个图标上，并停留几秒，检查图标名称和延迟气泡是否都消失。</li></ol><div class="note">退出后再应用，是为了避免 Nexus 在退出时把旧配置写回来。第一次应用会自动保存原文字设置，后面可以恢复。</div><h3>如果只想保留一种文字</h3><p>分别勾选或取消「显示悬停图标名称」「显示延迟信息气泡」，然后点击「应用文字设置」。同样需要先退出 Nexus，应用后再启动。</p><h3>如果按钮不可用，或想改成小字</h3><p>点击「打开 Nexus 详细设置」。它会打开 Nexus 自己的设置窗口。不同版本配置不兼容时，总控台会禁止自动修改，可用原生设置完成：</p><table><thead><tr><th>想做什么</th><th>Nexus 原生设置路径</th></tr></thead><tbody><tr><td>关闭图标名称</td><td>外观 / Appearance → 取消「鼠标经过时显示图标标签」。</td></tr><tr><td>关闭信息气泡</td><td>行为 / Behavior → 更多选项 / More Options → 气泡提示选「从不 / Never」。</td></tr><tr><td>保留但缩小文字</td><td>外观 → 标签设置 / Label Settings → 调小字体，按喜好关闭背景和描边，再保存。</td></tr></tbody></table><p class="small">若详细设置没打开，点击 Dock 上的 Nexus 控制图标，或尝试默认快捷键 Ctrl+F11。仅安装频谱的用户可以直接使用频谱页面，不必安装 Nexus。</p></section>
-<section id="restore"><h2><span class="num">04</span>改错了，怎样恢复？</h2><table><thead><tr><th>遇到的情况</th><th>使用哪个按钮</th></tr></thead><tbody><tr><td>频谱还没应用，想丢弃本次修改</td><td>音乐频谱 →「重新读取」，重新载入已保存的桌面配置。</td></tr><tr><td>想回到自己保存的频谱方案</td><td>「读取我的方案」→「应用到桌面」。</td></tr><tr><td>想恢复首次应用前的频谱设置</td><td>音乐频谱 →「恢复原设置」。没有备份时按钮不可用。</td></tr><tr><td>想重新显示原来的 Nexus 文字</td><td>先退出 Nexus →「恢复原文字设置」→「启动 Nexus」。</td></tr><tr><td>想恢复整套桌面外观</td><td>使用原安装目录的 <code>Restore-Desktop.cmd</code>；频谱页面的恢复按钮只负责频谱。</td></tr></tbody></table><p class="small">Nexus 的恢复只合并仍存在的文字设置，不把整套 Dock 配置换回旧版本。频谱方案和 Nexus 文字备份是分开的。</p></section>
-<section id="faq"><h2>遇到问题，先看这几项</h2><h3>预览在动，但桌面没有频谱？</h3><p>先检查「显示频谱」是否勾选、不透明度是否大于 0，再点击「应用到桌面」并播放音乐。若顶部显示组件未运行，点击「启动组件」。检查 X、Y 是否把频谱移到了屏幕之外。</p><h3>选择了目录仍提示找不到配置？</h3><p>选择原安装根目录。它至少应包含 <code>Rainmeter/Rainmeter.ini</code> 及原来的 <code>Skins/RetrOcOlOr</code> 皮肤。这个测试包不包含第三方软件和皮肤；首次安装应使用源码包中的 <code>Install.cmd</code>。</p><h3>为什么 Nexus 的“关闭所有悬停文字”是灰色？</h3><p>总控台没有识别到完整、兼容的文字配置。先启动 Nexus，保存一次设置，退出后重新读取。仍不可用就按上面的原生设置路径操作。</p><h3>动画会一直耗资源吗？</h3><p>按钮反馈与切页动画都是短暂过渡。系统关闭界面动画时，总控台也会减少这些动效；频谱预览会复用背景网格和曲线对象。</p><h3>切到 Nexus 页面，预览是不是停了？</h3><p>是的。切页或最小化时会暂停预览动画；回到频谱页面后继续，减少不必要的后台绘制。</p><h3>保存方案和应用到桌面有什么不同？</h3><p>保存方案是留一份参数；应用到桌面才会修改实际频谱。保存后不会自动应用。</p></section>
-<footer>AdCat 桌面 1.3.1 测试版 · 本教程对应随包程序。<br>Nexus 原生选项参考：<a href="https://themes.winstep.net/help/Nx/nexus.htm">Winstep 官方用户指南</a>。此文件可离线阅读，也可在浏览器中打印或保存为 PDF。</footer>
+<header>
+  <div class="eyebrow">ADCAT DESKTOP · 1.3.1</div>
+  <h1>第一次用，从这里开始。</h1>
+  <p class="sub">AdCat 桌面把音乐频谱、桌面时钟和 Nexus 启动栏放在一个总控台里。下载、安装、调位置，几分钟就能用上。</p>
+  <p class="badge">1.3.1 正式版 · Windows 11</p>
+  <nav aria-label="教程目录">
+    <a href="#install">① 安装</a>
+    <a href="#open">② 打开总控台</a>
+    <a href="#spectrum">③ 调整频谱与位置</a>
+    <a href="#startup">④ 开机自启动</a>
+    <a href="#nexus">⑤ Nexus 设置</a>
+    <a href="#restore">⑥ 恢复原桌面</a>
+    <a href="#faq">常见问题</a>
+  </nav>
+</header>
+
+<section id="install">
+  <h2><span class="num">01</span>安装：一个 EXE，双击即可</h2>
+  <ol class="steps">
+    <li>从 GitHub Releases 下载 <code>AdCat-Desktop-Setup-1.3.1.exe</code>。</li>
+    <li>双击运行，不需要解压。</li>
+    <li>Nexus 官方安装器弹出 Windows 管理员提示时，点<strong>“是”</strong>。</li>
+    <li>安装完成后会自动隐藏桌面图标、自动隐藏任务栏，并启动 Nexus 和频谱。</li>
+  </ol>
+  <div class="grid">
+    <div class="card"><h3>会自动完成</h3><p class="small">下载/校验 Rainmeter、时钟和频谱皮肤、Nexus；构建 AdCat 控制台；创建桌面快捷方式；启动组件。</p></div>
+    <div class="card"><h3>桌面快捷方式</h3><p class="small"><strong>AdCat 桌面</strong>打开总控台；<strong>启动 AdCat 桌面</strong>重新启动 Nexus/频谱；<strong>恢复原桌面</strong>还原安装前状态。</p></div>
+  </div>
+  <div class="warn"><strong>SmartScreen：</strong>EXE 没有购买商业代码签名。如果提示“已保护你的电脑”，点<strong>“更多信息 → 仍要运行”</strong>。</div>
+  <div class="note"><strong>只更新已有安装：</strong>下载 <code>AdCat-ControlCenter-1.3.1.0.zip</code>，解压后运行 <code>Install.cmd</code>，选择原来的安装根目录。它会更新控制台、恢复脚本和快捷方式名称，不需要重装 Rainmeter/Nexus。</div>
+</section>
+
+<section id="open">
+  <h2><span class="num">02</span>打开总控台</h2>
+  <p>双击桌面的 <strong>AdCat 桌面</strong>。窗口顶部是频谱/Nexus 自启动开关和状态；下面分为两个页面。</p>
+  <div class="grid">
+    <div class="card"><h3>音乐频谱</h3><p class="small">左侧预览配色和波形；右侧调宽度、高度、灵敏度、颜色、位置；底部应用到桌面。</p></div>
+    <div class="card"><h3>Nexus 启动栏</h3><p class="small">检测 Nexus 路径、启动程序、打开原生设置，以及关闭鼠标悬停文字。</p></div>
+  </div>
+  <p>右上角始终有 <strong>恢复原桌面</strong> 按钮；这是比“恢复原设置”更彻底的还原入口。</p>
+  <div class="note">第一次打开如果选择目录，请选择包含 <code>Rainmeter</code> 文件夹的安装根目录，而不是 Rainmeter 文件夹内部。</div>
+</section>
+
+<section id="spectrum">
+  <h2><span class="num">03</span>调整频谱，并直接拖动位置</h2>
+  <p class="flow">选配色 → 拖滑块 → 拖动迷你桌面里的频谱条 → 应用到桌面</p>
+  <ol class="steps">
+    <li>进入 <strong>音乐频谱</strong>，在“色彩灵感”里选一个配色，例如“冰川蓝”。</li>
+    <li>拖动宽度、波动高度、灵敏度、平滑度、不透明度；左侧预览会同步变化。</li>
+    <li>在 <strong>位置与显示</strong> 里，找到迷你桌面预览。直接<strong>拖动绿色频谱条</strong>，X/Y 输入框会同步更新，范围自动限制在屏幕内。</li>
+    <li>也可以点“水平居中”“应用栏上方”，或直接输入 X/Y。</li>
+    <li>勾选“显示频谱”，点击右下角 <strong>应用到桌面</strong>。播放音乐观察实际效果。</li>
+  </ol>
+  <table><thead><tr><th>参数</th><th>怎么理解</th></tr></thead><tbody>
+    <tr><td>频谱宽度 / 波动高度</td><td>控制横向长度和波动范围。挡住画面就调小。</td></tr>
+    <tr><td>声音灵敏度</td><td>数值越高，小声音也更容易触发波动。</td></tr>
+    <tr><td>回落平滑度</td><td>数值越高，声音停止后回落越慢；0 表示不额外延迟。</td></tr>
+    <tr><td>不透明度</td><td>100% 最明显，0% 完全透明。</td></tr>
+    <tr><td>X / Y</td><td>X 越大越靠右，Y 越大越靠下。直接拖预览条最快。</td></tr>
+    <tr><td>鼠标穿透</td><td>点击可穿过频谱。开启时，悬停效果不可用。</td></tr>
+  </tbody></table>
+  <div class="note"><strong>预览使用模拟音源</strong>，用来比较参数；实际桌面波形由 Rainmeter 提供。“暂停动画”和“模拟静音”不会关闭桌面频谱。</div>
+  <p>调好后可以点<strong>“保存我的方案”</strong>；以后用“读取我的方案”找回，仍需点“应用到桌面”才真正生效。</p>
+</section>
+
+<section id="startup">
+  <h2><span class="num">04</span>决定要不要开机自启动</h2>
+  <p>窗口顶部有两个独立开关：<strong>频谱 · 开机自启动</strong> 与 <strong>Nexus · 开机自启动</strong>。</p>
+  <ol class="steps">
+    <li>点击开关，绿色表示已登记，灰色表示关闭；修改<strong>立即保存</strong>。</li>
+    <li>下次登录 Windows 当前账户时生效，不会立刻启动或退出程序。</li>
+    <li>如果原程序自己也设置了自启动，页面会提示；可在“系统启动项”或原程序设置里关闭，避免重复。</li>
+  </ol>
+  <p class="small">移动或删除安装目录前，先关闭对应自启动开关；移动后重新设置。此功能不需要管理员权限。</p>
+</section>
+
+<section id="nexus">
+  <h2><span class="num">05</span>让 Nexus 更清爽</h2>
+  <p>如果鼠标碰到 Dock 图标时弹出文字，可以关闭。这里有两种文字：<strong>图标名称</strong>和<strong>延迟信息气泡</strong>。</p>
+  <ol class="steps">
+    <li>点击 <strong>Nexus 启动栏</strong>。如果未找到程序，点“选择 Nexus.exe”。</li>
+    <li>从 Nexus 图标右键菜单<strong>退出 Nexus</strong>，不要只关闭设置窗口。</li>
+    <li>回到 AdCat 点 <strong>重新读取</strong>，再点 <strong>关闭所有悬停文字</strong>。</li>
+    <li>看到“文字设置已保存并校验”后，点 <strong>启动 Nexus</strong>。</li>
+    <li>把鼠标移到多个图标上并停留几秒，确认名称和气泡都消失。</li>
+  </ol>
+  <div class="note">第一次修改会备份原文字设置，可点“恢复原文字设置”。如果总控台无法识别你的 Nexus 配置，请使用“打开 Nexus 详细设置”手动调整。</div>
+  <h3>Nexus 不出现？</h3>
+  <p>先看 <strong>AdCat 桌面 → Nexus 启动栏</strong> 是否检测到 <code>Nexus.exe</code>；有路径就点“启动 Nexus”。如果 Dock 被隐藏，右键系统托盘的 Nexus 图标 → Dock → Show Dock。安装阶段必须允许 Nexus 的管理员确认，否则不会安装。</p>
+</section>
+
+<section id="restore">
+  <h2><span class="num">06</span>恢复原桌面</h2>
+  <p>控制台右上角的 <strong>恢复原桌面</strong> 会先确认，然后：</p>
+  <ol class="steps">
+    <li>停止 Nexus 和频谱/Rainmeter。</li>
+    <li><strong>强制显示桌面图标</strong>和任务栏，不再沿用备份里的“隐藏图标”状态。</li>
+    <li>恢复安装前的壁纸设置。</li>
+    <li>控制台保持打开，并提示恢复结果。</li>
+  </ol>
+  <div class="note">桌面快捷方式 <strong>恢复原桌面</strong> 也会执行同样的恢复。旧版升级后如果快捷方式名称没变，运行一次新的控制台更新包即可清理旧 ADC 快捷方式。</div>
+  <table><thead><tr><th>想恢复什么</th><th>用哪个入口</th></tr></thead><tbody>
+    <tr><td>频谱还没应用，丢弃本次修改</td><td>音乐频谱 →“重新读取”</td></tr>
+    <tr><td>回到保存过的频谱方案</td><td>“读取我的方案” → “应用到桌面”</td></tr>
+    <tr><td>回到首次应用前的频谱设置</td><td>“恢复原设置”（仅频谱）</td></tr>
+    <tr><td>整套桌面图标/任务栏/壁纸</td><td>右上角“恢复原桌面”或桌面快捷方式</td></tr>
+  </tbody></table>
+</section>
+
+<section id="faq">
+  <h2>遇到问题，先看这几项</h2>
+  <h3>恢复后桌面软件图标还是不出现？</h3>
+  <p>请确认用的是 1.3.1 或更新版本，并点击右上角 <strong>恢复原桌面</strong>。1.3.1 会强制显示图标和任务栏；旧版只更新控制台时恢复脚本可能还是旧的，需要运行 <code>AdCat-ControlCenter-1.3.1.0.zip</code> 里的 <code>Install.cmd</code>。</p>
+  <h3>Nexus 没出现？</h3>
+  <p>检查安装时是否在管理员提示中点“是”；打开“Nexus 启动栏”看路径；有路径就启动 Nexus，Dock 隐藏时从托盘菜单选 Show Dock。已有 Nexus 配置会被保留，不会覆盖。</p>
+  <h3>安装时提示需要管理员权限或 Error 5？</h3>
+  <p>这是 Nexus 官方安装器的 Windows 权限提示。请允许管理员权限后重试；如果之前取消过，重新运行安装包。不要删除已有 Nexus 配置。</p>
+  <h3>提示 An installation directory is required？</h3>
+  <p>这是旧版启动脚本的问题。1.3.1 已修复；已有安装可运行修复包，或直接用新的 <code>AdCat-Desktop-Setup-1.3.1.exe</code>。</p>
+  <h3>位置拖到屏幕外了？</h3>
+  <p>在迷你桌面里把频谱条拖回可见区域，或直接输入 X/Y，再点“应用到桌面”。坐标会自动限制在屏幕范围内。</p>
+  <h3>预览在动，桌面没反应？</h3>
+  <p>确认“显示频谱”已勾选、不透明度大于 0，点了“应用到桌面”，并且顶部状态显示频谱运行。若组件未运行，点“启动组件”或桌面上的“启动 AdCat 桌面”。</p>
+</section>
+
+<footer>AdCat 桌面 1.3.1 · 本教程随安装包提供，可离线阅读或打印。<br>Nexus 原生选项参考：<a href="https://themes.winstep.net/help/Nx/nexus.htm">Winstep 官方用户指南</a>。</footer>
 </main></body></html>
