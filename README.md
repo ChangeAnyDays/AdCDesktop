@@ -37,9 +37,11 @@
 
 完成后，Nexus 和频谱会自动打开；也可以双击桌面的 **ADC 总控台** 继续调整配色、滑块，再点击 **应用到桌面**。
 
-### 一键完整安装包
+### 一键安装（无需解压）
 
-从 Releases 下载 `ADC-Desktop-Setup-1.2.5.zip`，解压到任意独立目录（不要解压进安装目录），双击 `Install.cmd`。脚本会自动下载/校验 Rainmeter、皮肤和 Nexus，构建控制台，创建快捷方式并启动。首次 Nexus 安装请在 Windows 管理员提示中点“是”。
+从 Releases 下载 `ADC-Desktop-Setup-1.2.5.exe`，直接双击。程序会在临时目录内展开安装文件，自动下载/校验 Rainmeter、皮肤和 Nexus，构建控制台，创建快捷方式并启动。首次 Nexus 安装请在 Windows 管理员提示中点“是”。
+
+如果浏览器或 Windows 对未签名 EXE 弹出 SmartScreen，点“更多信息 → 仍要运行”。也可以下载 `ADC-Desktop-Setup-1.2.5.zip` 作为备用，解压后双击 `Install.cmd`。
 
 ## 新手教程
 
