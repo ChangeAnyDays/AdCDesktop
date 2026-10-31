@@ -27,7 +27,7 @@ FullyQualifiedErrorId : PropertyNotFoundStrict,Install.ps1
 
 ## 已执行的自动验证
 
-以下九项在 Windows PowerShell 5.1 上运行，退出码全部为 0。原始输出保存在本机 `artifacts/verification/local-1.2.2/`，不提交个人运行状态。
+以下九项在 Windows PowerShell 5.1 上运行，退出码全部为 0。关键结果、UI 截图和 `results.json` 保存在本机 `artifacts/verification/local-1.2.2/`，不提交个人运行状态。
 
 | 检查 | 结果 |
 |---|---|
@@ -40,6 +40,8 @@ FullyQualifiedErrorId : PropertyNotFoundStrict,Install.ps1
 | Windows 控制台编译 | .NET Framework 4.8 / C# 5 通过，文件版本 1.2.2.0 |
 | 控制台测试 | 72 后端、45 总控台、27 自启动、313 WPF 检查通过 |
 | 更新安装器 | 真实 EXE 部署、重复更新备份、特殊路径、锁文件失败回退通过 |
+
+另做了一次完整的首次安装夹具：用假的 Rainmeter 程序和控制台、缓存中的 Welfare / RetrOcOlOr 归档运行完整 `Install.ps1`，不再出现 Count 错误，皮肤和清单均生成成功；日志见 `artifacts/verification/local-1.2.2/fresh-install.log`。它验证安装编排和解包，不代表真实下载或第三方安装器已在本轮重跑。
 
 WPF 测试实际创建并显示离屏窗口，覆盖两页 × 两尺寸（1080×840、940×650）× 四种内容缩放（100/125/150/200%），共 16 场景、32 张截图；另新增默认窗口尺寸下底栏主按钮无需滚动即可见的断言。**内容 ScaleTransform 不等于切换系统 DPI**。
 
@@ -63,4 +65,4 @@ WPF 测试实际创建并显示离屏窗口，覆盖两页 × 两尺寸（1080×
 
 ## GitHub CI
 
-上一版程序提交 `18df2891d4dee7ca237789598234dba333342225` 的 Windows CI 曾成功：[Windows 构建与验证记录](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41016881621)。本次修复的提交与新的 CI 结果需以仓库 Actions 页面为准；自动测试不能替代以上未完成的实机验收。
+本次修复提交 `fd9d333653360d73cd17b4cb4f088d848faf1bc3` 的 Windows CI 已成功：[Windows 构建与验证记录](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41180503636)。上一版程序提交 `18df2891d4dee7ca237789598234dba333342225` 的历史记录为：[上一版 CI](https://github.com/ChangeAnyDays/AdCDesktop/actions/runs/41016881621)。自动测试不能替代以上未完成的实机验收。
