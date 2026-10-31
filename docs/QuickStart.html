@@ -43,17 +43,18 @@ footer{margin-top:34px;color:var(--faint);font-size:14px}
 </head>
 <body><main>
 <header>
-  <div class="eyebrow">ADCAT DESKTOP · 1.3.1</div>
+  <div class="eyebrow">ADCAT DESKTOP · 1.3.2</div>
   <h1>第一次用，从这里开始。</h1>
   <p class="sub">AdCat 桌面把音乐频谱、桌面时钟和 Nexus 启动栏放在一个总控台里。下载、安装、调位置，几分钟就能用上。</p>
-  <p class="badge">1.3.1 正式版 · Windows 11</p>
+  <p class="badge">1.3.2 正式版 · Windows 11</p>
   <nav aria-label="教程目录">
     <a href="#install">① 安装</a>
     <a href="#open">② 打开总控台</a>
     <a href="#spectrum">③ 调整频谱与位置</a>
     <a href="#startup">④ 开机自启动</a>
     <a href="#nexus">⑤ Nexus 设置</a>
-    <a href="#restore">⑥ 恢复原桌面</a>
+    <a href="#appearance">⑥ Nexus 外观</a>
+    <a href="#restore">⑦ 恢复原桌面</a>
     <a href="#faq">常见问题</a>
   </nav>
 </header>
@@ -61,7 +62,7 @@ footer{margin-top:34px;color:var(--faint);font-size:14px}
 <section id="install">
   <h2><span class="num">01</span>安装：一个 EXE，双击即可</h2>
   <ol class="steps">
-    <li>从 GitHub Releases 下载 <code>AdCat-Desktop-Setup-1.3.1.exe</code>。</li>
+    <li>从 GitHub Releases 下载 <code>AdCat-Desktop-Setup-1.3.2.exe</code>。</li>
     <li>双击运行，不需要解压。</li>
     <li>Nexus 官方安装器弹出 Windows 管理员提示时，点<strong>“是”</strong>。</li>
     <li>安装完成后会自动隐藏桌面图标、自动隐藏任务栏，并启动 Nexus 和频谱。</li>
@@ -71,12 +72,12 @@ footer{margin-top:34px;color:var(--faint);font-size:14px}
     <div class="card"><h3>桌面快捷方式</h3><p class="small"><strong>AdCat 桌面</strong>打开总控台；<strong>启动 AdCat 桌面</strong>重新启动 Nexus/频谱；<strong>恢复原桌面</strong>还原安装前状态。</p></div>
   </div>
   <div class="warn"><strong>SmartScreen：</strong>EXE 没有购买商业代码签名。如果提示“已保护你的电脑”，点<strong>“更多信息 → 仍要运行”</strong>。</div>
-  <div class="note"><strong>只更新已有安装：</strong>下载 <code>AdCat-ControlCenter-1.3.1.0.zip</code>，解压后运行 <code>Install.cmd</code>，选择原来的安装根目录。它会更新控制台、恢复脚本和快捷方式名称，不需要重装 Rainmeter/Nexus。</div>
+  <div class="note"><strong>只更新已有安装：</strong>下载 <code>AdCat-ControlCenter-1.3.2.0.zip</code>，解压后运行 <code>Install.cmd</code>，选择原来的安装根目录。它会更新控制台、恢复脚本和快捷方式名称，不需要重装 Rainmeter/Nexus。</div>
 </section>
 
 <section id="open">
   <h2><span class="num">02</span>打开总控台</h2>
-  <p>双击桌面的 <strong>AdCat 桌面</strong>。窗口顶部是频谱/Nexus 自启动开关和状态；下面分为两个页面。</p>
+  <p>双击桌面的 <strong>AdCat 桌面</strong>。窗口顶部是频谱/Nexus 自启动开关和状态；下面分为音乐频谱、Nexus 启动栏和 Nexus 外观三个页面。</p>
   <div class="grid">
     <div class="card"><h3>音乐频谱</h3><p class="small">左侧预览配色和波形；右侧调宽度、高度、灵敏度、颜色、位置；底部应用到桌面。</p></div>
     <div class="card"><h3>Nexus 启动栏</h3><p class="small">检测 Nexus 路径、启动程序、打开原生设置，以及关闭鼠标悬停文字。</p></div>
@@ -133,8 +134,24 @@ footer{margin-top:34px;color:var(--faint);font-size:14px}
   <p>先看 <strong>AdCat 桌面 → Nexus 启动栏</strong> 是否检测到 <code>Nexus.exe</code>；有路径就点“启动 Nexus”。如果 Dock 被隐藏，右键系统托盘的 Nexus 图标 → Dock → Show Dock。安装阶段必须允许 Nexus 的管理员确认，否则不会安装。</p>
 </section>
 
-<section id="restore">
-  <h2><span class="num">06</span>恢复原桌面</h2>
+<section id="appearance">
+  <h2><span class="num">06</span>一键换 Nexus 外观</h2>
+  <p>顶部导航新增 <strong>Nexus 外观</strong> 页。这里不需要打开 Nexus 首选项，也不会改图标和顺序。</p>
+  <div class="grid">
+    <div class="card"><h3>极简底部</h3><p class="small">42px 图标、轻反射、小间距；Dock 安静地待在底部。</p></div>
+    <div class="card"><h3>均衡默认</h3><p class="small">49px 图标、中等反射与放大；接近 Nexus 默认的稳重效果。</p></div>
+    <div class="card"><h3>大图标展示</h3><p class="small">60px 大图标、强反射与明显放大；适合展示和演示。</p></div>
+    <div class="card"><h3>紧凑悬浮</h3><p class="small">36px 小图标、低反射、小间距；适合屏幕空间紧张。</p></div>
+    <div class="card"><h3>雨滴玻璃</h3><p class="small">40px 图标、明显反射、雨滴和水波；最有氛围的一套。</p></div>
+  </div>
+  <ol class="steps">
+    <li>点顶部 <strong>Nexus 外观</strong>，每张卡片都有桌面效果预览图。</li>
+    <li>点对应卡片的“应用”。AdCat 会先退出 Nexus、写入参数，再自动启动。</li>
+    <li>看 Dock 效果；不满意就点“恢复原外观”，回到首次应用前的参数。</li>
+  </ol>
+  <div class="note">首次应用会把原始外观备份到 <code>SpectrumControl/Backups/nexus-appearance-original.json</code>。应用过程中 Nexus 会重启一次，这是正常现象。</div>
+</section><section id="restore">
+  <h2><span class="num">07</span>恢复原桌面</h2>
   <p>控制台右上角的 <strong>恢复原桌面</strong> 会先确认，然后：</p>
   <ol class="steps">
     <li>停止 Nexus 和频谱/Rainmeter。</li>
@@ -154,18 +171,18 @@ footer{margin-top:34px;color:var(--faint);font-size:14px}
 <section id="faq">
   <h2>遇到问题，先看这几项</h2>
   <h3>恢复后桌面软件图标还是不出现？</h3>
-  <p>请确认用的是 1.3.1 或更新版本，并点击右上角 <strong>恢复原桌面</strong>。1.3.1 会强制显示图标和任务栏；旧版只更新控制台时恢复脚本可能还是旧的，需要运行 <code>AdCat-ControlCenter-1.3.1.0.zip</code> 里的 <code>Install.cmd</code>。</p>
+  <p>请确认用的是 1.3.2 或更新版本，并点击右上角 <strong>恢复原桌面</strong>。1.3.2 会强制显示图标和任务栏；旧版只更新控制台时恢复脚本可能还是旧的，需要运行 <code>AdCat-ControlCenter-1.3.2.0.zip</code> 里的 <code>Install.cmd</code>。</p>
   <h3>Nexus 没出现？</h3>
   <p>检查安装时是否在管理员提示中点“是”；打开“Nexus 启动栏”看路径；有路径就启动 Nexus，Dock 隐藏时从托盘菜单选 Show Dock。已有 Nexus 配置会被保留，不会覆盖。</p>
   <h3>安装时提示需要管理员权限或 Error 5？</h3>
   <p>这是 Nexus 官方安装器的 Windows 权限提示。请允许管理员权限后重试；如果之前取消过，重新运行安装包。不要删除已有 Nexus 配置。</p>
   <h3>提示 An installation directory is required？</h3>
-  <p>这是旧版启动脚本的问题。1.3.1 已修复；已有安装可运行修复包，或直接用新的 <code>AdCat-Desktop-Setup-1.3.1.exe</code>。</p>
+  <p>这是旧版启动脚本的问题。1.3.2 已修复；已有安装可运行修复包，或直接用新的 <code>AdCat-Desktop-Setup-1.3.2.exe</code>。</p>
   <h3>位置拖到屏幕外了？</h3>
   <p>在迷你桌面里把频谱条拖回可见区域，或直接输入 X/Y，再点“应用到桌面”。坐标会自动限制在屏幕范围内。</p>
   <h3>预览在动，桌面没反应？</h3>
   <p>确认“显示频谱”已勾选、不透明度大于 0，点了“应用到桌面”，并且顶部状态显示频谱运行。若组件未运行，点“启动组件”或桌面上的“启动 AdCat 桌面”。</p>
 </section>
 
-<footer>AdCat 桌面 1.3.1 · 本教程随安装包提供，可离线阅读或打印。<br>Nexus 原生选项参考：<a href="https://themes.winstep.net/help/Nx/nexus.htm">Winstep 官方用户指南</a>。</footer>
+<footer>AdCat 桌面 1.3.2 · 本教程随安装包提供，可离线阅读或打印。<br>Nexus 原生选项参考：<a href="https://themes.winstep.net/help/Nx/nexus.htm">Winstep 官方用户指南</a>。</footer>
 </main></body></html>

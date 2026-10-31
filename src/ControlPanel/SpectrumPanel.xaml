@@ -135,6 +135,7 @@
     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,16">
       <Button x:Name="SpectrumTab" Style="{StaticResource NavButton}" Content="音乐频谱" Margin="0,0,10,0" AutomationProperties.AutomationId="SpectrumTab"/>
       <Button x:Name="NexusTab" Style="{StaticResource NavButton}" Content="Nexus 启动栏" AutomationProperties.AutomationId="NexusTab"/>
+      <Button x:Name="AppearanceTab" Style="{StaticResource NavButton}" Content="Nexus 外观" Margin="10,0,0,0" AutomationProperties.AutomationId="AppearanceTab"/>
       <Button x:Name="HelpButton" Content="上手教程" Margin="10,0,0,0" AutomationProperties.AutomationId="HelpButton"/>
       <Button x:Name="WindowsStartupButton" Content="系统启动项" Margin="10,0,0,0" AutomationProperties.AutomationId="WindowsStartupButton"/>
     </StackPanel>
@@ -236,6 +237,61 @@
             <Border Height="1" Background="#E0D8CC" Margin="0,0,0,16"/>
             <TextBlock Text="保留文字，换成更轻的样式" FontSize="15" FontWeight="SemiBold"/>
             <TextBlock Text="详细设置 → 外观（Appearance）→ 标签设置（Label Settings），可调整字体、颜色、文字效果和背景。建议使用较小字体，关闭背景与描边。" TextWrapping="Wrap" Foreground="{StaticResource Muted}" LineHeight="22" Margin="0,8,0,0"/>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+    <ScrollViewer x:Name="AppearancePage" Grid.Row="3" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel>
+        <Border CornerRadius="16" Background="#FBF9F4" BorderBrush="#D8D0C4" BorderThickness="1" Padding="24" Margin="0,0,0,16">
+          <StackPanel>
+            <TextBlock Text="Nexus 外观方案" FontSize="22" FontWeight="SemiBold"/>
+            <TextBlock Text="不用打开 Nexus 首选项。选一个方案，AdCat 会先退出 Nexus、写入外观参数，再自动启动；图标、顺序和位置不变。" Foreground="{StaticResource Muted}" TextWrapping="Wrap" LineHeight="21" Margin="0,8,0,18"/>
+            <Grid>
+              <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+              <Border Grid.Row="0" Grid.Column="0" Background="#F7F3EC" BorderBrush="#D8D0C4" BorderThickness="1" CornerRadius="12" Padding="10" Margin="0,0,8,12">
+                <StackPanel>
+                  <Border CornerRadius="8" ClipToBounds="True"><Image x:Name="LookMinimalImage" Height="180" Stretch="Uniform"/></Border>
+                  <Grid Margin="2,10,2,0"><TextBlock Text="极简底部" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/><Button x:Name="NexusLookMinimal" Content="应用" HorizontalAlignment="Right" Padding="14,6" AutomationProperties.AutomationId="NexusLookMinimal"/></Grid>
+                  <TextBlock Text="42px 图标 · 轻反射 · 无雨滴" Foreground="{StaticResource Muted}" FontSize="11" Margin="2,4,0,0"/>
+                </StackPanel>
+              </Border>
+              <Border Grid.Row="0" Grid.Column="1" Background="#F7F3EC" BorderBrush="#D8D0C4" BorderThickness="1" CornerRadius="12" Padding="10" Margin="8,0,0,12">
+                <StackPanel>
+                  <Border CornerRadius="8" ClipToBounds="True"><Image x:Name="LookBalancedImage" Height="180" Stretch="Uniform"/></Border>
+                  <Grid Margin="2,10,2,0"><TextBlock Text="均衡默认" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/><Button x:Name="NexusLookBalanced" Content="应用" HorizontalAlignment="Right" Padding="14,6" AutomationProperties.AutomationId="NexusLookBalanced"/></Grid>
+                  <TextBlock Text="49px 图标 · 中等反射 · 雨滴 / 水波" Foreground="{StaticResource Muted}" FontSize="11" Margin="2,4,0,0"/>
+                </StackPanel>
+              </Border>
+              <Border Grid.Row="1" Grid.Column="0" Background="#F7F3EC" BorderBrush="#D8D0C4" BorderThickness="1" CornerRadius="12" Padding="10" Margin="0,0,8,0">
+                <StackPanel>
+                  <Border CornerRadius="8" ClipToBounds="True"><Image x:Name="LookShowcaseImage" Height="180" Stretch="Uniform"/></Border>
+                  <Grid Margin="2,10,2,0"><TextBlock Text="大图标展示" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/><Button x:Name="NexusLookShowcase" Content="应用" HorizontalAlignment="Right" Padding="14,6" AutomationProperties.AutomationId="NexusLookShowcase"/></Grid>
+                  <TextBlock Text="60px 大图标 · 强反射 · 雨滴 / 水波" Foreground="{StaticResource Muted}" FontSize="11" Margin="2,4,0,0"/>
+                </StackPanel>
+              </Border>
+              <Border Grid.Row="1" Grid.Column="1" Background="#F7F3EC" BorderBrush="#D8D0C4" BorderThickness="1" CornerRadius="12" Padding="10" Margin="8,0,0,0">
+                <StackPanel>
+                  <Border CornerRadius="8" ClipToBounds="True"><Image x:Name="LookCompactImage" Height="180" Stretch="Uniform"/></Border>
+                  <Grid Margin="2,10,2,0"><TextBlock Text="紧凑悬浮" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/><Button x:Name="NexusLookCompact" Content="应用" HorizontalAlignment="Right" Padding="14,6" AutomationProperties.AutomationId="NexusLookCompact"/></Grid>
+                  <TextBlock Text="36px 小图标 · 无反射 · 无雨滴" Foreground="{StaticResource Muted}" FontSize="11" Margin="2,4,0,0"/>
+                </StackPanel>
+              </Border>
+              <Border Grid.Row="2" Grid.ColumnSpan="2" Background="#F7F3EC" BorderBrush="#D8D0C4" BorderThickness="1" CornerRadius="12" Padding="10" Margin="0,12,0,0">
+                <Grid>
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="340"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                  <Border CornerRadius="8" ClipToBounds="True"><Image x:Name="LookRainglassImage" Height="160" Stretch="Uniform"/></Border>
+                  <StackPanel Grid.Column="1" Margin="18,4,4,4" VerticalAlignment="Center">
+                    <TextBlock Text="雨滴玻璃" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock Text="40px 图标 · 明显反射 · 雨滴 / 水波" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,6,0,10"/>
+                    <TextBlock Text="最有氛围的一套：保留雨滴和水面涟漪，Dock 像一块湿润的玻璃。首次应用会先备份原外观。" Foreground="{StaticResource Muted}" TextWrapping="Wrap" LineHeight="20" Margin="0,0,0,14"/>
+                    <Button x:Name="NexusLookRain" Content="应用雨滴玻璃" HorizontalAlignment="Left" Padding="16,7" AutomationProperties.AutomationId="NexusLookRain"/>
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </Grid>
+            <WrapPanel Margin="0,14,0,0"><Button x:Name="NexusLookRestore" Content="恢复原外观" Margin="0,0,12,0"/><TextBlock x:Name="NexusLookFeedback" Text="首次应用会备份原始外观；恢复后可回到当前外观。" Foreground="#6E6A63" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap"/></WrapPanel>
           </StackPanel>
         </Border>
       </StackPanel>

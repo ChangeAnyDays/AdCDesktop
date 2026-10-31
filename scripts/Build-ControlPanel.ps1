@@ -24,9 +24,13 @@ foreach ($name in @('System.dll','System.Core.dll','System.Xml.dll','System.Xaml
 foreach ($name in @('PresentationCore.dll','PresentationFramework.dll','WindowsBase.dll')) {
     $arguments += '/reference:' + (Join-Path $wpf $name)
 }
+foreach ($presetName in @('minimal','balanced','showcase','compact','rainglass')) {
+    $arguments += '/resource:' + (Join-Path $repoRoot ('assets\nexus-presets\' + $presetName + '.png')) + ',NexusPreset.' + $presetName + '.png'
+}
 $arguments += (Join-Path $source 'SpectrumPanel.cs')
 $arguments += (Join-Path $source 'SpectrumBackend.cs')
 $arguments += (Join-Path $source 'NexusBackend.cs')
+$arguments += (Join-Path $source 'NexusAppearance.cs')
 $arguments += (Join-Path $source 'SpectrumPreview.cs')
 $arguments += (Join-Path $source 'StartupBackend.cs')
 & $compiler $arguments

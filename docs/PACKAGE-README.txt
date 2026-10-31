@@ -1,4 +1,4 @@
-﻿AdCat 桌面 1.3.1 — Windows 11 更新包
+﻿AdCat 桌面 1.3.2 — Windows 11 更新包
 
 安装：完整解压 ZIP，双击 Install.cmd，选择已有桌面美化的根目录
 （里面应有 Rainmeter 文件夹），完成后从桌面“AdCat 桌面”打开。

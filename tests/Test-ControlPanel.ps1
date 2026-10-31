@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param([switch]$SkipBuild)
 
 $ErrorActionPreference = 'Stop'
@@ -41,6 +41,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Backend fixture tests failed.' }
 $centerTest = Join-Path $fixtureWorkspace 'ControlCenterTests.exe'
 $centerArguments = @('/nologo','/target:exe','/codepage:65001',('/out:' + $centerTest),'/reference:System.Core.dll','/reference:System.Runtime.Serialization.dll')
 $centerArguments += Join-Path $repositoryRoot 'src\ControlPanel\NexusBackend.cs'
+$centerArguments += Join-Path $repositoryRoot 'src\ControlPanel\NexusAppearance.cs'
 $centerArguments += Join-Path $repositoryRoot 'src\ControlPanel\SpectrumPreview.cs'
 $centerArguments += Join-Path $PSScriptRoot 'ControlCenterTests.cs'
 & $compiler $centerArguments

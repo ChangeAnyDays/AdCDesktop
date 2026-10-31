@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.3.1.0")]
+[assembly: AssemblyVersion("1.3.2.0")]
 
 namespace SpectrumControl
 {
@@ -158,6 +158,7 @@ namespace SpectrumControl
         private double lastPreviewTick;
         private bool previewPaused;
         private bool nexusPage;
+        private string currentPage = "spectrum";
         private readonly NexusBackend nexus;
         private bool nexusLoading;
         private bool nexusDirty;
@@ -272,8 +273,9 @@ namespace SpectrumControl
             };
             Window.Loaded += delegate { WireMotion(Window.Content as DependencyObject); };
             Window.Activated += delegate { RefreshStartup(); };
-            Find<Button>("SpectrumTab").Click += delegate { SelectPage(false); };
-            Find<Button>("NexusTab").Click += delegate { SelectPage(true); };
+            Find<Button>("SpectrumTab").Click += delegate { SelectPage("spectrum"); };
+            Find<Button>("NexusTab").Click += delegate { SelectPage("nexus"); };
+            Find<Button>("AppearanceTab").Click += delegate { SelectPage("appearance"); };
             Find<Button>("PausePreviewButton").Click += delegate
             {
                 previewPaused = !previewPaused;
@@ -298,7 +300,7 @@ namespace SpectrumControl
             Window.Closed += delegate { animation.Stop(); statusTimer.Stop(); };
             Window.StateChanged += delegate { UpdateAnimation(); };
             Window.IsVisibleChanged += delegate { UpdateAnimation(); };
-            SelectPage(false);
+            SelectPage("spectrum");
             Find<Canvas>("PreviewCanvas").SizeChanged += delegate { DrawPreview(); };
         }
 
@@ -420,8 +422,26 @@ namespace SpectrumControl
                 new DoubleAnimation(7, 0, duration) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.Stop });
         }
 
+        private void LoadPresetImages()
+        {
+            foreach (string id in new[] { "minimal", "balanced", "showcase", "compact", "rainglass" })
+            {
+                using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("NexusPreset." + id + ".png"))
+                {
+                    if (stream == null) continue;
+                    BitmapImage image = new BitmapImage();
+                    image.BeginInit();
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.StreamSource = stream;
+                    image.EndInit();
+                    image.Freeze();
+                    Find<Image>("Look" + id.Substring(0, 1).ToUpperInvariant() + id.Substring(1) + "Image").Source = image;
+                }
+            }
+        }
         private void WireNexus()
         {
+            LoadPresetImages();
             Find<Button>("NexusStartButton").Click += delegate { NexusAction(delegate { nexus.Start(false); NexusFeedback("已请求启动 Nexus。", false); }); };
             Find<Button>("NexusSettingsButton").Click += delegate { NexusAction(delegate
             {
@@ -451,6 +471,12 @@ namespace SpectrumControl
                 Find<CheckBox>("NexusTooltipsCheck").IsChecked = false;
                 ApplyNexus(false);
             };
+            foreach (string name in new[] { "NexusLookMinimal", "NexusLookBalanced", "NexusLookShowcase", "NexusLookCompact", "NexusLookRain" })
+            {
+                string presetId = name == "NexusLookRain" ? "rainglass" : name.Replace("NexusLook", "").ToLowerInvariant();
+                Find<Button>(name).Click += delegate { ApplyNexusAppearance(presetId, false); };
+            }
+            Find<Button>("NexusLookRestore").Click += delegate { ApplyNexusAppearance(null, true); };
             foreach (string name in new[] { "NexusLabelsCheck", "NexusTooltipsCheck" })
             {
                 Find<CheckBox>(name).Checked += delegate { MarkNexusDirty(); };
@@ -477,9 +503,44 @@ namespace SpectrumControl
             catch (Exception ex) { NexusFeedback("操作未完成：" + ex.Message, true); }
             finally { RefreshNexusStatus(); }
         }
-        private void ApplyNexus(bool restore)
+        private void ApplyNexusAppearance(string presetId, bool restore)
         {
+            NexusAppearancePreset preset = null;
+            if (!restore)
+            {
+                preset = NexusAppearancePresets.Find(presetId);
+                MessageBoxResult answer = MessageBox.Show(
+                    "将应用「" + preset.Name + "」外观。\n\n" + preset.Description + "\n\nNexus 会自动退出并重启一次，图标、顺序和位置不变。",
+                    "应用 Nexus 外观", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (answer != MessageBoxResult.Yes) return;
+            }
+            else
+            {
+                if (!nexus.Appearance.HasBackup)
+                {
+                    Find<TextBlock>("NexusLookFeedback").Text = "还没有可恢复的 Nexus 外观备份。";
+                    return;
+                }
+                MessageBoxResult answer = MessageBox.Show(
+                    "恢复第一次应用外观预设前的 Nexus 参数，并自动重启 Nexus。\n\n继续吗？",
+                    "恢复 Nexus 外观", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (answer != MessageBoxResult.Yes) return;
+            }
             NexusAction(delegate
+            {
+                Window.Cursor = Cursors.Wait;
+                try
+                {
+                    if (restore) nexus.RestoreAppearance(); else nexus.ApplyAppearance(preset);
+                }
+                finally { Window.Cursor = null; }
+                string message = restore ? "已恢复原 Nexus 外观，并重新启动 Nexus。" : "已应用「" + preset.Name + "」外观，并重新启动 Nexus。";
+                Find<TextBlock>("NexusLookFeedback").Text = message;
+                NexusFeedback(message, false);
+            });
+        }
+        private void ApplyNexus(bool restore)
+        {            NexusAction(delegate
             {
                 if (!restore && (Find<CheckBox>("NexusLabelsCheck").IsChecked == null || Find<CheckBox>("NexusTooltipsCheck").IsChecked == null))
                     throw new InvalidOperationException("不同 Dock 的设置不一致，请先明确选择是否显示文字。");
@@ -541,22 +602,33 @@ namespace SpectrumControl
             catch (Exception ex) { Find<TextBlock>("NexusStatus").Text = "无法读取 Nexus 状态：" + ex.Message; }
         }
 
-        private void SelectPage(bool showNexus)
+        private void SelectPage(string page)
         {
-            bool changedPage = nexusPage != showNexus;
-            nexusPage = showNexus;
-            Find<Grid>("SpectrumPage").Visibility = showNexus ? Visibility.Collapsed : Visibility.Visible;
-            Find<Grid>("SpectrumFooter").Visibility = showNexus ? Visibility.Collapsed : Visibility.Visible;
-            Find<ScrollViewer>("NexusPage").Visibility = showNexus ? Visibility.Visible : Visibility.Collapsed;
-            Find<Button>("SpectrumTab").BorderBrush = Brush(showNexus ? "#D8D0C4" : "#1D1D1D");
-            Find<Button>("NexusTab").BorderBrush = Brush(showNexus ? "#1D1D1D" : "#D8D0C4");
-            Find<Button>("SpectrumTab").Background = Brush(showNexus ? "#FBF9F4" : "#1D1D1D");
-            Find<Button>("NexusTab").Background = Brush(showNexus ? "#1D1D1D" : "#FBF9F4");
-            Find<Button>("SpectrumTab").Foreground = Brush(showNexus ? "#3A3A36" : "#FAF8F4");
-            Find<Button>("NexusTab").Foreground = Brush(showNexus ? "#FAF8F4" : "#3A3A36");
-            if (showNexus) { RefreshNexusStatus(); if (!nexusDirty) LoadNexusSettings(); }
-            if (changedPage) AnimatePage(showNexus ? (FrameworkElement)Find<ScrollViewer>("NexusPage") : Find<Grid>("SpectrumPage"));
+            bool changedPage = currentPage != page;
+            currentPage = page;
+            nexusPage = page != "spectrum";
+            Find<Grid>("SpectrumPage").Visibility = page == "spectrum" ? Visibility.Visible : Visibility.Collapsed;
+            Find<Grid>("SpectrumFooter").Visibility = page == "spectrum" ? Visibility.Visible : Visibility.Collapsed;
+            Find<ScrollViewer>("NexusPage").Visibility = page == "nexus" ? Visibility.Visible : Visibility.Collapsed;
+            Find<ScrollViewer>("AppearancePage").Visibility = page == "appearance" ? Visibility.Visible : Visibility.Collapsed;
+            StyleNavButton("SpectrumTab", page == "spectrum");
+            StyleNavButton("NexusTab", page == "nexus");
+            StyleNavButton("AppearanceTab", page == "appearance");
+            if (page == "nexus" || page == "appearance") RefreshNexusStatus();
+            if (page == "nexus" && !nexusDirty) LoadNexusSettings();
+            if (changedPage)
+            {
+                FrameworkElement target = page == "spectrum" ? (FrameworkElement)Find<Grid>("SpectrumPage") :
+                    page == "nexus" ? (FrameworkElement)Find<ScrollViewer>("NexusPage") : (FrameworkElement)Find<ScrollViewer>("AppearancePage");
+                AnimatePage(target);
+            }
             UpdateAnimation();
+        }
+        private void StyleNavButton(string name, bool selected)
+        {
+            Find<Button>(name).BorderBrush = Brush(selected ? "#1D1D1D" : "#D8D0C4");
+            Find<Button>(name).Background = Brush(selected ? "#1D1D1D" : "#FBF9F4");
+            Find<Button>(name).Foreground = Brush(selected ? "#FAF8F4" : "#3A3A36");
         }
         private void UpdateAnimation()
         {

@@ -201,11 +201,13 @@ namespace SpectrumControl
         private readonly string root;
         private readonly bool integration;
         public readonly NexusSettingsService Settings;
+        public readonly NexusAppearanceService Appearance;
         private string PathFile { get { return Path.Combine(root, "SpectrumControl", "nexus-path.txt"); } }
         public NexusBackend(string rootPath, bool integrationEnabled)
         {
             root = rootPath; integration = integrationEnabled;
             Settings = new NexusSettingsService(new NexusRegistryStore(), Path.Combine(root, "SpectrumControl", "Backups", "nexus-text-original.json"));
+            Appearance = new NexusAppearanceService(Path.Combine(root, "SpectrumControl", "Backups", "nexus-appearance-original.json"));
         }
         public string StartupExecutable
         {
@@ -292,6 +294,71 @@ namespace SpectrumControl
             if (!integration) throw new InvalidOperationException("测试模式不修改 Nexus 配置。");
             if (Running) throw new InvalidOperationException("请先从 Nexus 图标右键菜单退出 Nexus，再点击应用，避免正在运行的 Nexus 覆盖修改。应用后点击「启动 Nexus」。");
             if (restore) Settings.Restore(); else Settings.Apply(labels, tips);
+        }
+        public void ApplyAppearance(NexusAppearancePreset preset)
+        {
+            if (!integration) throw new InvalidOperationException("测试模式不修改 Nexus 配置。");
+            if (preset == null) throw new ArgumentNullException("preset");
+            string path = Executable;
+            if (path == null) throw new FileNotFoundException("未找到 Nexus，请先安装或选择 Nexus.exe。");
+            StopForAppearance(path);
+            try { Appearance.Apply(preset); }
+            catch
+            {
+                try { Start(false); } catch { }
+                throw;
+            }
+            Start(false);
+        }
+        public void RestoreAppearance()
+        {
+            if (!integration) throw new InvalidOperationException("测试模式不修改 Nexus 配置。");
+            string path = Executable;
+            if (path == null) throw new FileNotFoundException("未找到 Nexus，请先安装或选择 Nexus.exe。");
+            StopForAppearance(path);
+            try { Appearance.Restore(); }
+            catch
+            {
+                try { Start(false); } catch { }
+                throw;
+            }
+            Start(false);
+        }
+        private void StopForAppearance(string executable)
+        {
+            var same = new List<Process>();
+            foreach (Process process in Process.GetProcessesByName("Nexus"))
+            {
+                string runningPath;
+                try { runningPath = process.MainModule.FileName; }
+                catch
+                {
+                    process.Dispose();
+                    throw new InvalidOperationException("无法确认正在运行的 Nexus 路径，请先手动退出它。");
+                }
+                if (!String.Equals(Path.GetFullPath(runningPath), Path.GetFullPath(executable), StringComparison.OrdinalIgnoreCase))
+                {
+                    process.Dispose();
+                    throw new InvalidOperationException("另一目录的 Nexus 正在运行，请先退出它。");
+                }
+                same.Add(process);
+            }
+            try
+            {
+                foreach (Process process in same)
+                {
+                    try
+                    {
+                        if (!process.CloseMainWindow() || !process.WaitForExit(5000))
+                        {
+                            process.Kill();
+                            process.WaitForExit(3000);
+                        }
+                    }
+                    catch (InvalidOperationException) { }
+                }
+            }
+            finally { foreach (Process process in same) process.Dispose(); }
         }
     }
 }
