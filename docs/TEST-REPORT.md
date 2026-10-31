@@ -6,6 +6,7 @@
 - 页头、EXE、桌面快捷方式和任务栏图标统一替换为猫猫图标。
 - 控制面板回归结果：72 后端、45 总控台、30 启动项、313 WPF 检查全部通过。
 - 安装包更新测试通过：重复备份、保留用户文件、Unicode/空格/方括号路径、预检拒绝和锁定文件回滚。
+- 修复 Windows PowerShell 5.1 下 `Start-Desktop.ps1` / `Restore-Desktop.ps1` 在未传 `-InstallDir` 时把 `$PSScriptRoot` 当作参数默认值而得到空路径的问题；启动快捷方式现在可直接打开。
 
 
 验证日期：2026-10-31（Asia/Shanghai）。Windows 11 家庭中文版 x64，Build 26200；.NET Framework 4.8，Windows PowerShell 5.1；C# 5 编译器。本文区分隔离自动测试、真实干净安装和仍未完成的验收项。

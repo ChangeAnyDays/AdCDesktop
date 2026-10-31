@@ -1,6 +1,8 @@
-﻿[CmdletBinding(SupportsShouldProcess=$true)]
-param([string]$InstallDir=$PSScriptRoot)
+[CmdletBinding(SupportsShouldProcess=$true)]
+param([string]$InstallDir)
 $ErrorActionPreference='Stop'
+# Windows PowerShell 5.1 does not populate $PSScriptRoot inside param() defaults.
+if ([string]::IsNullOrWhiteSpace($InstallDir)) { $InstallDir = $PSScriptRoot }
 Import-Module (Join-Path $PSScriptRoot 'scripts\AdCDesktop.Common.psm1') -Force
 $InstallDir=Get-FullInstallPath $InstallDir
 $manifest=Read-DesktopManifest $InstallDir

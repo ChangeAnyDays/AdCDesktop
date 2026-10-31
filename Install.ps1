@@ -245,7 +245,7 @@ Get-ChildItem -LiteralPath $panelOutput -File | ForEach-Object { Copy-Item -Lite
 [void][IO.Directory]::CreateDirectory((Join-Path $InstallDir 'scripts'))
 foreach ($file in @('AdCDesktop.Common.psm1','DesktopShell.cs')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot ('scripts\' + $file)) -Destination (Join-Path $InstallDir ('scripts\' + $file)) -Force }
 foreach ($file in @('Start-Desktop.ps1','Restore-Desktop.ps1')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination (Join-Path $InstallDir $file) -Force }
-foreach ($name in @('Start-Desktop','Restore-Desktop')) { [IO.File]::WriteAllText((Join-Path $InstallDir ($name + '.cmd')), "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"%~dp0$name.ps1`" %*`r`nif errorlevel 1 pause`r`n", [Text.Encoding]::ASCII) }
+foreach ($name in @('Start-Desktop','Restore-Desktop')) { [IO.File]::WriteAllText((Join-Path $InstallDir ($name + '.cmd')), "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"%~dp0$name.ps1`" -InstallDir `"%~dp0.`" %*`r`nif errorlevel 1 pause`r`n", [Text.Encoding]::ASCII) }
 
 $engine = if ($Mode -eq 'Full' -and (!$Offline -or $WallpaperEnginePath)) { Find-WallpaperEngine $WallpaperEnginePath } else { $null }
 if ($WallpaperProject -and !(Test-Path -LiteralPath $WallpaperProject -PathType Leaf)) { throw 'WallpaperProject must point to a local project.json owned or subscribed to by this user.' }
