@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -166,6 +166,12 @@ namespace SpectrumControl
         private double previewCanvasWidth, previewCanvasHeight;
         private System.Windows.Shapes.Path previewLine, previewGlow;
         private string previewGradientKey;
+        private Canvas positionCanvas;
+        private Border positionScreen, positionSpectrum;
+        private TextBlock positionHint, positionReadout;
+        private bool draggingPosition;
+        private Point positionDragOffset;
+        private double positionScale, positionOffsetX, positionOffsetY;
 
         public Panel(string rootPath, bool integration)
         {
@@ -207,15 +213,18 @@ namespace SpectrumControl
                 int x = ParseInteger(Find<TextBox>("XValue").Text, 0);
                 if (Math.Abs(x - (screenWidth - e.OldValue) / 2) <= 3)
                     Find<TextBox>("XValue").Text = Math.Max(0, (screenWidth - (int)e.NewValue) / 2).ToString(CultureInfo.InvariantCulture);
+                UpdatePositionPreview();
             };
             Find<Slider>("HeightSlider").ValueChanged += delegate(object sender, RoutedPropertyChangedEventArgs<double> e)
             {
                 if (loading) return;
                 int y = ParseInteger(Find<TextBox>("YValue").Text, 0);
                 Find<TextBox>("YValue").Text = (y + (int)e.OldValue - (int)e.NewValue).ToString(CultureInfo.InvariantCulture);
+                UpdatePositionPreview();
             };
-            Find<TextBox>("XValue").TextChanged += delegate { MarkDirty(); };
-            Find<TextBox>("YValue").TextChanged += delegate { MarkDirty(); };
+            Find<TextBox>("XValue").TextChanged += delegate { MarkDirty(); UpdatePositionPreview(); };
+            Find<TextBox>("YValue").TextChanged += delegate { MarkDirty(); UpdatePositionPreview(); };
+            WirePositionPreview();
             foreach (string name in new[] { "VisibleCheck", "ClickThroughCheck" })
             {
                 Find<CheckBox>(name).Checked += delegate { MarkDirty(); UpdateHoverAvailability(); DrawPreview(); };
@@ -759,6 +768,84 @@ namespace SpectrumControl
                 button.IsEnabled = true;
                 Feedback("无法恢复原桌面：" + ex.Message, true);
             }
+        }
+        private void WirePositionPreview()
+        {
+            positionCanvas = Find<Canvas>("PositionCanvas");
+            positionScreen = Find<Border>("PositionScreen");
+            positionSpectrum = Find<Border>("PositionSpectrum");
+            positionHint = Find<TextBlock>("PositionHint");
+            positionReadout = Find<TextBlock>("PositionReadout");
+            positionCanvas.SizeChanged += delegate { UpdatePositionPreview(); };
+            positionSpectrum.MouseLeftButtonDown += PositionSpectrum_MouseLeftButtonDown;
+            positionSpectrum.MouseMove += PositionSpectrum_MouseMove;
+            positionSpectrum.MouseLeftButtonUp += PositionSpectrum_MouseLeftButtonUp;
+            positionSpectrum.LostMouseCapture += delegate { draggingPosition = false; };
+            UpdatePositionPreview();
+        }
+        private void UpdatePositionPreview()
+        {
+            if (positionCanvas == null || positionScreen == null || positionSpectrum == null) return;
+            double cw = positionCanvas.ActualWidth, ch = positionCanvas.ActualHeight;
+            if (cw < 20 || ch < 20) return;
+            double margin = 10;
+            double scale = Math.Min((cw - margin * 2) / screenWidth, (ch - margin * 2) / screenHeight);
+            if (scale <= 0) return;
+            positionScale = scale;
+            double screenW = screenWidth * scale, screenH = screenHeight * scale;
+            positionOffsetX = (cw - screenW) / 2;
+            positionOffsetY = (ch - screenH) / 2;
+            Canvas.SetLeft(positionScreen, positionOffsetX);
+            Canvas.SetTop(positionScreen, positionOffsetY);
+            positionScreen.Width = screenW;
+            positionScreen.Height = screenH;
+
+            int width = Math.Max(1, (int)Math.Round(Find<Slider>("WidthSlider").Value));
+            int height = Math.Max(1, (int)Math.Round(Find<Slider>("HeightSlider").Value));
+            int x = ParseInteger(Find<TextBox>("XValue").Text, 0);
+            int y = ParseInteger(Find<TextBox>("YValue").Text, 0);
+            x = Math.Max(0, Math.Min(Math.Max(0, screenWidth - width), x));
+            y = Math.Max(0, Math.Min(Math.Max(0, screenHeight - height), y));
+
+            Canvas.SetLeft(positionSpectrum, positionOffsetX + x * scale);
+            Canvas.SetTop(positionSpectrum, positionOffsetY + y * scale);
+            positionSpectrum.Width = Math.Max(4, Math.Min(screenW, width * scale));
+            positionSpectrum.Height = Math.Max(4, Math.Min(screenH, height * scale));
+            positionReadout.Text = "X " + x + " · Y " + y + " · " + width + "×" + height;
+            Canvas.SetLeft(positionHint, 8);
+            Canvas.SetTop(positionHint, 4);
+            Canvas.SetLeft(positionReadout, Math.Max(8, cw - 150));
+            Canvas.SetTop(positionReadout, 4);
+        }
+        private void PositionSpectrum_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (positionCanvas == null) return;
+            positionDragOffset = e.GetPosition(positionSpectrum);
+            draggingPosition = true;
+            positionSpectrum.CaptureMouse();
+            e.Handled = true;
+        }
+        private void PositionSpectrum_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!draggingPosition || positionScale <= 0) return;
+            Point point = e.GetPosition(positionCanvas);
+            int width = Math.Max(1, (int)Math.Round(Find<Slider>("WidthSlider").Value));
+            int height = Math.Max(1, (int)Math.Round(Find<Slider>("HeightSlider").Value));
+            int x = (int)Math.Round((point.X - positionDragOffset.X - positionOffsetX) / positionScale);
+            int y = (int)Math.Round((point.Y - positionDragOffset.Y - positionOffsetY) / positionScale);
+            x = Math.Max(0, Math.Min(Math.Max(0, screenWidth - width), x));
+            y = Math.Max(0, Math.Min(Math.Max(0, screenHeight - height), y));
+            Find<TextBox>("XValue").Text = x.ToString(CultureInfo.InvariantCulture);
+            Find<TextBox>("YValue").Text = y.ToString(CultureInfo.InvariantCulture);
+            UpdatePositionPreview();
+            e.Handled = true;
+        }
+        private void PositionSpectrum_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (!draggingPosition) return;
+            draggingPosition = false;
+            positionSpectrum.ReleaseMouseCapture();
+            e.Handled = true;
         }
         private void RefreshStatus()
         {

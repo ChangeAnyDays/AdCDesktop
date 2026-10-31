@@ -190,6 +190,14 @@
         </Grid>
         <Border Height="1" Background="#E0D8CC" Margin="0,0,0,14"/>
         <DockPanel Margin="0,0,0,10"><TextBlock Text="位置与显示" FontSize="15" FontWeight="SemiBold"/><CheckBox x:Name="VisibleCheck" Content="显示频谱" DockPanel.Dock="Right" HorizontalAlignment="Right" IsChecked="True" AutomationProperties.AutomationId="VisibleCheck"/></DockPanel>
+        <Border Height="158" Background="#EDE7DC" BorderBrush="#D8D0C4" BorderThickness="1" CornerRadius="10" Margin="0,0,0,10" ClipToBounds="True">
+          <Canvas x:Name="PositionCanvas" Height="156" Background="Transparent">
+            <Border x:Name="PositionScreen" Background="#FBF9F4" BorderBrush="#C4BDB1" BorderThickness="1" CornerRadius="6"/>
+            <Border x:Name="PositionSpectrum" Background="#6F8F7C" Opacity="0.78" BorderBrush="#1B1B1B" BorderThickness="1" CornerRadius="3" Cursor="Hand"/>
+            <TextBlock x:Name="PositionHint" Text="拖动频谱条调整位置" FontSize="10" Foreground="#8C867C"/>
+            <TextBlock x:Name="PositionReadout" Text="X 610 · Y 879" FontSize="10" Foreground="#4F6B5B"/>
+          </Canvas>
+        </Border>
         <Grid Margin="0,0,0,9"><Grid.ColumnDefinitions><ColumnDefinition Width="25"/><ColumnDefinition Width="65"/><ColumnDefinition Width="12"/><ColumnDefinition Width="25"/><ColumnDefinition Width="65"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="X" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><TextBox x:Name="XValue" Grid.Column="1" Text="610" AutomationProperties.AutomationId="XValue"/><TextBlock Grid.Column="3" Text="Y" VerticalAlignment="Center" Foreground="{StaticResource Muted}"/><TextBox x:Name="YValue" Grid.Column="4" Text="879" AutomationProperties.AutomationId="YValue"/><StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right"><Button x:Name="CenterButton" Content="水平居中" Padding="10,7" FontSize="11" Margin="8,0,6,0"/><Button x:Name="BottomButton" Content="应用栏上方" Padding="10,7" FontSize="11" AutomationProperties.AutomationId="BottomButton"/></StackPanel></Grid>
         <CheckBox x:Name="ClickThroughCheck" HorizontalAlignment="Left" Content="鼠标穿透，让桌面点击更顺手" IsChecked="True" Margin="0,0,0,10" AutomationProperties.AutomationId="ClickThroughCheck"/>
         <DockPanel><TextBlock Text="鼠标经过时" VerticalAlignment="Center" Foreground="#3A3A36"/><ComboBox x:Name="HoverCombo" Width="160" HorizontalAlignment="Right" SelectedIndex="0" AutomationProperties.AutomationId="HoverMode"><ComboBoxItem Content="保持不变" Tag="0"/><ComboBoxItem Content="隐藏频谱" Tag="1"/><ComboBoxItem Content="淡入" Tag="2"/><ComboBoxItem Content="淡出" Tag="3"/></ComboBox></DockPanel>
