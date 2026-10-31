@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -22,9 +22,9 @@ using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 using Path = System.IO.Path;
 
-[assembly: AssemblyTitle("ADC 总控台")]
+[assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.3.0.0")]
+[assembly: AssemblyVersion("1.3.1.0")]
 
 namespace SpectrumControl
 {
@@ -99,7 +99,7 @@ namespace SpectrumControl
             {
                 if (args.Length > 0 && (args[0] == "--screenshot" || args[0] == "--smoke-test"))
                 { Console.Error.WriteLine(ex.ToString()); return 1; }
-                MessageBox.Show("控制台暂时无法打开：\n" + ex.Message + "\n\n桌面频谱不会因此被关闭。", "ADC 总控台", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("控制台暂时无法打开：\n" + ex.Message + "\n\n桌面频谱不会因此被关闭。", "AdCat 桌面", MessageBoxButton.OK, MessageBoxImage.Information);
                 return 1;
             }
         }
@@ -362,7 +362,7 @@ namespace SpectrumControl
             {
                 startup.Set(isNexus ? StartupBackend.NexusName : StartupBackend.SpectrumName,
                     isNexus ? NexusStartupExecutable : SpectrumExecutable, enabled);
-                message.Text = (isNexus ? "Nexus" : "频谱") + (enabled ? "自启动已保存，下次登录生效。" : "的 ADC 自启动已关闭，当前程序继续运行。") + " 原程序另外设置的自启动需在原程序中关闭。";
+                message.Text = (isNexus ? "Nexus" : "频谱") + (enabled ? "自启动已保存，下次登录生效。" : "的 AdCat 自启动已关闭，当前程序继续运行。") + " 原程序另外设置的自启动需在原程序中关闭。";
                 message.Foreground = Brush("#4F6B5B");
                 RefreshStartup();
                 AnimateSwitch(toggle, enabled);

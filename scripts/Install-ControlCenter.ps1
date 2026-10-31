@@ -54,7 +54,7 @@ foreach ($file in $payloadFiles) {
 foreach ($process in @(Get-Process AdCDesktop -ErrorAction SilentlyContinue)) {
     try {
         if ([string]::Equals($process.Path,$application,[StringComparison]::OrdinalIgnoreCase)) {
-            throw 'Close ADC Control Center before installing the update.'
+            throw 'Close AdCat desktop before installing the update.'
         }
     }
     finally { $process.Dispose() }
@@ -86,7 +86,7 @@ try {
     if (!$NoShortcut) {
         $desktop = [Environment]::GetFolderPath('Desktop')
         if ([string]::IsNullOrWhiteSpace($desktop) -or !(Test-Path -LiteralPath $desktop -PathType Container)) { throw 'The current-user desktop directory is unavailable. Use -NoShortcut to install without a desktop entry.' }
-        $shortcutPath = Join-Path $desktop ('ADC ' + [char]0x603B + [char]0x63A7 + [char]0x53F0 + '.lnk')
+        $shortcutPath = Join-Path $desktop ('AdCat ' + [char]0x684C + [char]0x9762 + '.lnk')
         if ((Test-Path -LiteralPath $shortcutPath) -and !(Test-Path -LiteralPath $shortcutPath -PathType Leaf)) { throw 'The desktop shortcut path is a directory.' }
         $shortcutExisted = Test-Path -LiteralPath $shortcutPath -PathType Leaf
         if ($shortcutExisted) {
@@ -94,6 +94,17 @@ try {
             if ((Get-FileHash -LiteralPath $shortcutPath -Algorithm SHA256).Hash -ne (Get-FileHash -LiteralPath (Join-Path $backup 'previous-shortcut.lnk') -Algorithm SHA256).Hash) { throw 'Shortcut backup verification failed.' }
         }
         $shell = New-Object -ComObject WScript.Shell
+        $legacyShortcutPath = Join-Path $desktop ('ADC ' + [char]0x603B + [char]0x63A7 + [char]0x53F0 + '.lnk')
+        if (Test-Path -LiteralPath $legacyShortcutPath -PathType Leaf) {
+            $legacyShortcut = $shell.CreateShortcut($legacyShortcutPath)
+            if ($legacyShortcut.TargetPath -ieq $application) { Remove-Item -LiteralPath $legacyShortcutPath -Force }
+        }
+        $legacyStartName = [string]([char]0x542F) + [char]0x52A8 + 'AdC' + [char]0x684C + [char]0x9762 + [char]0x7F8E + [char]0x5316
+        $legacyStartPath = Join-Path $desktop ($legacyStartName + '.lnk')
+        if (Test-Path -LiteralPath $legacyStartPath -PathType Leaf) {
+            $legacyStartShortcut = $shell.CreateShortcut($legacyStartPath)
+            if ($legacyStartShortcut.TargetPath -ieq (Join-Path $InstallDir 'Start-Desktop.cmd')) { Remove-Item -LiteralPath $legacyStartPath -Force }
+        }
     }
     foreach ($entry in $entries) {
         $file = $entry.Name

@@ -167,7 +167,7 @@ public static class FixtureUiChecks
             Check(!Find<CheckBox>("SpectrumStartupToggle").IsEnabled && !Find<CheckBox>("NexusStartupToggle").IsEnabled,
                 "Fixture mode must disable both startup switches.");
             Check(Find<TextBlock>("SpectrumStartupStatus").Text.Contains("测试模式"), "Fixture startup state must be explicit.");
-            Check(window.Title == "ADC 总控台", "Control center title was not updated.");
+            Check(window.Title == "AdCat 桌面", "Control center title was not updated.");
             Find<TextBox>("XValue").Text = "321";
             Click("NexusTab");
             Check(Find<ScrollViewer>("NexusPage").Visibility == Visibility.Visible, "Nexus tab did not open.");

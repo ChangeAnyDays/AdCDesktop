@@ -1,8 +1,8 @@
-﻿ADC 总控台 1.3.0 — Windows 11 更新包
+﻿AdCat 桌面 1.3.1 — Windows 11 更新包
 
 安装：完整解压 ZIP，双击 Install.cmd，选择已有桌面美化的根目录
-（里面应有 Rainmeter 文件夹），完成后从桌面“ADC 总控台”打开。
-请先关闭 ADC 总控台，并把更新包解压到与现有 SpectrumControl 不同的目录。
+（里面应有 Rainmeter 文件夹），完成后从桌面“AdCat 桌面”打开。
+请先关闭 AdCat 桌面，并把更新包解压到与现有 SpectrumControl 不同的目录。
 更新仅替换 SpectrumControl 内的 AdCDesktop.exe、AdCDesktop.exe.config、
 QuickStart.html；覆盖前备份并核对 SHA-256，备份位于
 SpectrumControl/Backups/ControlCenter-*。写入失败时自动尝试回滚，
