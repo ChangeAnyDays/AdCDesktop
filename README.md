@@ -1,8 +1,8 @@
-# ADC 总控台
+﻿# ADC 总控台
 
 在一个窗口中管理音乐频谱和 Nexus 启动栏。频谱页面提供模拟音源预览；Nexus 页面提供启动、原生详细设置入口和悬停文字开关。仍支持选装透明任务栏和动态壁纸。
 
-> 1.2.4 测试版：已在 Windows 11 实际构建、安装并运行控制台，自动测试包含 313 项 WPF 交互与布局检查。预览仍使用模拟音源；Nexus 悬停效果、设置窗口响应和重启登录尚未完整验收，详见[测试报告](docs/TEST-REPORT.md)。
+> 1.2.5 测试版：已在 Windows 11 实际构建、安装并运行控制台，自动测试包含 313 项 WPF 交互与布局检查。预览仍使用模拟音源；Nexus 悬停效果、设置窗口响应和重启登录尚未完整验收，详见[测试报告](docs/TEST-REPORT.md)。
 
 原 1.0 频谱界面参考（不代表新的总控台布局）：
 
@@ -59,7 +59,7 @@
 .\scripts\Install-ControlCenter.ps1 -InstallDir 'D:\AdCDesktop' -Launch
 ```
 
-开发者可运行 `.\scripts\Build-Package.ps1` 生成 `artifacts/packages/ADC-ControlCenter-1.2.4.0.zip` 和 SHA-256 校验文件。解压更新包后双击其中的 `Install.cmd`，选择已有安装根目录即可。无需重装 Rainmeter 或 Nexus；包内不含第三方程序或皮肤。
+开发者可运行 `.\scripts\Build-Package.ps1` 生成 `artifacts/packages/ADC-ControlCenter-1.2.5.0.zip` 和 SHA-256 校验文件。解压更新包后双击其中的 `Install.cmd`，选择已有安装根目录即可。无需重装 Rainmeter 或 Nexus；包内不含第三方程序或皮肤。
 
 ## 完整桌面组合
 

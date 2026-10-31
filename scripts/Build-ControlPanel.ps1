@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param([string]$OutputDir)
 
 $ErrorActionPreference = 'Stop'
@@ -15,7 +15,7 @@ if (!(Test-Path -LiteralPath $compiler)) { throw 'The .NET Framework 4.8 C# comp
 $wpf = Join-Path $frameworkRoot 'WPF'
 $source = Join-Path $repoRoot 'src\ControlPanel'
 $exe = Join-Path $OutputDir 'AdCDesktop.exe'
-$arguments = @('/nologo','/target:winexe','/optimize+','/platform:anycpu','/codepage:65001',('/out:' + $exe),('/win32manifest:' + (Join-Path $source 'app.manifest')),('/resource:' + (Join-Path $source 'SpectrumPanel.xaml') + ',SpectrumControl.Panel.xaml'))
+$arguments = @('/nologo','/target:winexe','/optimize+','/platform:anycpu','/codepage:65001',('/out:' + $exe),('/win32manifest:' + (Join-Path $source 'app.manifest')),('/resource:' + (Join-Path $source 'SpectrumPanel.xaml') + ',SpectrumControl.Panel.xaml'),('/resource:' + (Join-Path $repoRoot 'assets\logo.png') + ',SpectrumControl.Logo.png'))
 $icon = Join-Path $repoRoot 'assets\app.ico'
 if (Test-Path -LiteralPath $icon) { $arguments += '/win32icon:' + $icon }
 foreach ($name in @('System.dll','System.Core.dll','System.Xml.dll','System.Xaml.dll','System.Drawing.dll','System.Windows.Forms.dll','System.Runtime.Serialization.dll')) {

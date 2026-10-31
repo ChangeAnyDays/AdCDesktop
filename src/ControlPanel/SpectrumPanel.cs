@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("ADC 总控台")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.2.4.0")]
+[assembly: AssemblyVersion("1.2.5.0")]
 
 namespace SpectrumControl
 {
@@ -175,6 +175,19 @@ namespace SpectrumControl
             startup = new StartupBackend(integration);
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpectrumControl.Panel.xaml"))
                 Window = (Window)XamlReader.Load(stream);
+            using (Stream logoStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("SpectrumControl.Logo.png"))
+            {
+                if (logoStream != null)
+                {
+                    BitmapImage logo = new BitmapImage();
+                    logo.BeginInit();
+                    logo.CacheOption = BitmapCacheOption.OnLoad;
+                    logo.StreamSource = logoStream;
+                    logo.EndInit();
+                    logo.Freeze();
+                    Find<Image>("BrandLogo").Source = logo;
+                }
+            }
             screenWidth = Forms.Screen.PrimaryScreen.Bounds.Width;
             screenHeight = Forms.Screen.PrimaryScreen.Bounds.Height;
             Window.MaxHeight = Math.Max(620, SystemParameters.WorkArea.Height - 35);
@@ -225,10 +238,9 @@ namespace SpectrumControl
             Find<Button>("StartButton").Click += delegate { RunAction(delegate { backend.EnsureRunning(); RefreshStatus(); Feedback("组件已启动", false); }); };
             Find<Button>("SavePresetButton").Click += delegate { RunAction(delegate { SaveMyPreset(ReadEditors()); Feedback("已保存你的方案；桌面设置尚未改变", false); }); };
             Find<Button>("LoadPresetButton").Click += delegate { RunAction(delegate { StageSettings(LoadMyPreset()); MarkDirty(); Feedback("已载入你的方案，点击应用即可生效", false); }); };
-            Window.SourceInitialized += delegate
-            {
-                try { int dark = 1; Native.DwmSetWindowAttribute(new WindowInteropHelper(Window).Handle, 20, ref dark, 4); } catch { }
-            };
+            Window.SourceInitialized += delegate { ApplyLightTitleBar(); };
+            Window.Loaded += delegate { ApplyLightTitleBar(); };
+            Window.Activated += delegate { ApplyLightTitleBar(); };
             Find<Button>("HelpButton").IsEnabled = integration;
             Find<Button>("HelpButton").Click += delegate
             {
@@ -318,13 +330,13 @@ namespace SpectrumControl
                         }
                         toggle.IsEnabled = state.CanChange;
                         label.Text = state.Detail;
-                        label.Foreground = Brush(state.Enabled ? "#81E8CC" : "#9FB9CE");
+                        label.Foreground = Brush(state.Enabled ? "#4F6B5B" : "#6E6A63");
                     }
                     catch (Exception ex)
                     {
                         toggle.IsChecked = false; toggle.IsEnabled = false;
                         label.Text = "无法读取：" + ex.Message;
-                        label.Foreground = Brush("#FFA49A");
+                        label.Foreground = Brush("#A33A34");
                     }
                 }
             }
@@ -341,7 +353,7 @@ namespace SpectrumControl
                 startup.Set(isNexus ? StartupBackend.NexusName : StartupBackend.SpectrumName,
                     isNexus ? NexusStartupExecutable : SpectrumExecutable, enabled);
                 message.Text = (isNexus ? "Nexus" : "频谱") + (enabled ? "自启动已保存，下次登录生效。" : "的 ADC 自启动已关闭，当前程序继续运行。") + " 原程序另外设置的自启动需在原程序中关闭。";
-                message.Foreground = Brush("#81E8CC");
+                message.Foreground = Brush("#4F6B5B");
                 RefreshStartup();
                 AnimateSwitch(toggle, enabled);
             }
@@ -349,7 +361,7 @@ namespace SpectrumControl
             {
                 RefreshStartup();
                 message.Text = "未能保存：" + ex.Message;
-                message.Foreground = Brush("#FFA49A");
+                message.Foreground = Brush("#A33A34");
             }
         }
         private static void AnimateSwitch(CheckBox toggle, bool enabled)
@@ -447,7 +459,7 @@ namespace SpectrumControl
         private void NexusFeedback(string message, bool error)
         {
             Find<TextBlock>("NexusFeedback").Text = message;
-            Find<TextBlock>("NexusFeedback").Foreground = Brush(error ? "#FFA49A" : "#9CB4CD");
+            Find<TextBlock>("NexusFeedback").Foreground = Brush(error ? "#A33A34" : "#6E6A63");
         }
         private void NexusAction(Action action)
         {
@@ -526,12 +538,12 @@ namespace SpectrumControl
             Find<Grid>("SpectrumPage").Visibility = showNexus ? Visibility.Collapsed : Visibility.Visible;
             Find<Grid>("SpectrumFooter").Visibility = showNexus ? Visibility.Collapsed : Visibility.Visible;
             Find<ScrollViewer>("NexusPage").Visibility = showNexus ? Visibility.Visible : Visibility.Collapsed;
-            Find<Button>("SpectrumTab").BorderBrush = Brush(showNexus ? "#324B68" : "#54D8DF");
-            Find<Button>("NexusTab").BorderBrush = Brush(showNexus ? "#54D8DF" : "#324B68");
-            Find<Button>("SpectrumTab").Background = Brush(showNexus ? "#16273C" : "#214B5D");
-            Find<Button>("NexusTab").Background = Brush(showNexus ? "#303858" : "#16273C");
-            Find<Button>("SpectrumTab").Foreground = Brush(showNexus ? "#A9BCD1" : "#B4F5EF");
-            Find<Button>("NexusTab").Foreground = Brush(showNexus ? "#DBD8FF" : "#A9BCD1");
+            Find<Button>("SpectrumTab").BorderBrush = Brush(showNexus ? "#D8D0C4" : "#1D1D1D");
+            Find<Button>("NexusTab").BorderBrush = Brush(showNexus ? "#1D1D1D" : "#D8D0C4");
+            Find<Button>("SpectrumTab").Background = Brush(showNexus ? "#FBF9F4" : "#1D1D1D");
+            Find<Button>("NexusTab").Background = Brush(showNexus ? "#1D1D1D" : "#FBF9F4");
+            Find<Button>("SpectrumTab").Foreground = Brush(showNexus ? "#3A3A36" : "#FAF8F4");
+            Find<Button>("NexusTab").Foreground = Brush(showNexus ? "#FAF8F4" : "#3A3A36");
             if (showNexus) { RefreshNexusStatus(); if (!nexusDirty) LoadNexusSettings(); }
             if (changedPage) AnimatePage(showNexus ? (FrameworkElement)Find<ScrollViewer>("NexusPage") : Find<Grid>("SpectrumPage"));
             UpdateAnimation();
@@ -622,7 +634,7 @@ namespace SpectrumControl
             // A reload (or an apply that rereads the desktop) ends any preset staging.
             stagedBase = null;
             Find<TextBlock>("DirtyLabel").Text = "已与桌面同步";
-            Find<TextBlock>("DirtyLabel").Foreground = Brush("#809BB7");
+            Find<TextBlock>("DirtyLabel").Foreground = Brush("#8C867C");
             Find<Button>("RestoreButton").IsEnabled = backend.HasOriginalBackup;
             Find<Button>("LoadPresetButton").IsEnabled = File.Exists(MyPresetPath);
             RefreshStatus();
@@ -631,7 +643,7 @@ namespace SpectrumControl
         {
             if (loading || loaded == null) return;
             Find<TextBlock>("DirtyLabel").Text = "有修改 · 待应用";
-            Find<TextBlock>("DirtyLabel").Foreground = Brush("#F4C26A");
+            Find<TextBlock>("DirtyLabel").Foreground = Brush("#B07D3E");
             Feedback("面板预览已更新，点击应用即可更新桌面", false);
         }
         private void UpdateHoverAvailability()
@@ -672,9 +684,23 @@ namespace SpectrumControl
             Find<Border>("EndSwatch").Background = Brush(endColor);
             Find<TextBlock>("StartHex").Text = startColor;
             Find<TextBlock>("EndHex").Text = endColor;
-            foreach (string name in new[] { "PresetOcean", "PresetIce", "PresetSunset", "PresetMint" }) Find<Button>(name).BorderBrush = Brush("#324B68");
+            foreach (string name in new[] { "PresetOcean", "PresetIce", "PresetSunset", "PresetMint" }) Find<Button>(name).BorderBrush = Brush("#D8D0C4");
             string active = startColor == "#12EDF7" && endColor == "#F50BB9" ? "PresetOcean" : startColor == "#78E7FF" && endColor == "#4D79FF" ? "PresetIce" : startColor == "#FFCF70" && endColor == "#FF6A88" ? "PresetSunset" : startColor == "#4DE2C6" && endColor == "#85CAFF" ? "PresetMint" : null;
-            if (active != null) Find<Button>(active).BorderBrush = Brush("#71DCE5");
+            if (active != null) Find<Button>(active).BorderBrush = Brush("#6F8F7C");
+        }
+        private void ApplyLightTitleBar()
+        {
+            try
+            {
+                IntPtr handle = new WindowInteropHelper(Window).Handle;
+                if (handle == IntPtr.Zero) return;
+                int light = 0; Native.DwmSetWindowAttribute(handle, 20, ref light, 4);
+                // DWM resets some of these when the window activates; apply again.
+                int caption = 0x00EBF1F4; Native.DwmSetWindowAttribute(handle, 35, ref caption, 4);
+                int captionText = 0x001B1B1B; Native.DwmSetWindowAttribute(handle, 36, ref captionText, 4);
+                int border = 0x00C4D0D8; Native.DwmSetWindowAttribute(handle, 34, ref border, 4);
+            }
+            catch { }
         }
         private void RefreshStatus()
         {
@@ -683,13 +709,13 @@ namespace SpectrumControl
                 SpectrumStatus status = backend.GetStatus();
                 string text = !status.Running ? "频谱未运行" : !status.SkinActive ? "频谱未加载" : status.Visible ? "频谱运行中" : "频谱已隐藏";
                 Find<TextBlock>("RuntimeStatus").Text = text;
-                Find<Ellipse>("StatusDot").Fill = Brush(status.Visible ? "#60E2AF" : "#F0B65A");
+                Find<Ellipse>("StatusDot").Fill = Brush(status.Visible ? "#5B7A69" : "#B58A4A");
                 Find<Button>("StartButton").Visibility = status.Running ? Visibility.Collapsed : Visibility.Visible;
             }
             catch { Find<TextBlock>("RuntimeStatus").Text = "暂时无法读取状态"; }
         }
         private void Feedback(string message, bool error)
-        { Find<TextBlock>("FeedbackText").Text = message; Find<TextBlock>("FeedbackText").Foreground = Brush(error ? "#FFA49A" : "#9CB4CD"); }
+        { Find<TextBlock>("FeedbackText").Text = message; Find<TextBlock>("FeedbackText").Foreground = Brush(error ? "#A33A34" : "#6E6A63"); }
         private void RunAction(Action action)
         {
             try { Window.Cursor = Cursors.Wait; action(); }

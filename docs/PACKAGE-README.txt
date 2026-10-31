@@ -1,4 +1,4 @@
-﻿ADC 总控台 1.2.4 — Windows 11 更新包
+﻿ADC 总控台 1.2.5 — Windows 11 更新包
 
 安装：完整解压 ZIP，双击 Install.cmd，选择已有桌面美化的根目录
 （里面应有 Rainmeter 文件夹），完成后从桌面“ADC 总控台”打开。
