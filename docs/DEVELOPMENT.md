@@ -48,6 +48,7 @@
 
 ```powershell
 .\tests\Test-ControlPanel.ps1
+.\tests\Test-SkinData.ps1
 .\tests\Test-Scripts.ps1
 .\tests\Test-Install.ps1
 .\tests\Test-StartupPreflight.ps1
@@ -70,7 +71,7 @@
 
 FixtureRoot 至少应有真实布局的三份配置，测试脚本会生成它们。`--smoke-test <fixtureRoot> <result.json>` 会修改所提供的样本目录，构造的后端禁用运行时集成；只能对测试样本使用。
 
-`Test-ControlPanel.ps1` 会实际创建并显示离屏 WPF 窗口，运行交互检查，并检查两页在 1080×840、940×650 窗口和 100% / 125% / 150% / 200% **内容 ScaleTransform 模拟缩放**下的布局，共 16 个场景。检查将关键操作滚动到视野内，确认完整控件位于窗口和各级滚动视口内；每场景保存初始及滚动后截图，位于 `tests/.artifacts/ui-layout/`。这种模拟验证 WPF 布局和可达性，**不是切换 Windows 系统 DPI 的实测**，也不验证实际 Rainmeter 音频或 Nexus 悬停效果。
+`Test-ControlPanel.ps1` 会实际创建并显示离屏 WPF 窗口，运行交互检查，并检查两页在 1080×840、940×650 窗口和 100% / 125% / 150% / 200% **内容 ScaleTransform 模拟缩放**下的布局，共 16 个场景。底栏固定在窗口底部，另有默认窗口尺寸下主操作无需滚动即可见的断言；其余关键控件会滚动到视野内，确认完整位于窗口和各级滚动视口内；每场景保存初始及滚动后截图，位于 `tests/.artifacts/ui-layout/`。这种模拟验证 WPF 布局和可达性，**不是切换 Windows 系统 DPI 的实测**，也不验证实际 Rainmeter 音频或 Nexus 悬停效果。
 
 测试按原字节将构建的 EXE/config 复制到独占本机临时目录再加载，避免源码解压目录的区域信息或旧 ACL 影响程序集加载。使用 PowerShell 7 的 `Start-Process` 启动 Windows PowerShell 5.1 时，应传递 Windows PowerShell 的模块路径，避免继承 PowerShell 7 模块目录而错误加载 Utility 模块；直接在 Windows PowerShell 5.1 中执行上述命令即可。
 

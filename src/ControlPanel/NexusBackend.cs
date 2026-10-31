@@ -209,17 +209,29 @@ namespace SpectrumControl
         }
         public string StartupExecutable
         {
+            get { return SelectedExecutable ?? Executable; }
+        }
+        private string SelectedExecutable
+        {
             get
             {
-                if (File.Exists(PathFile)) return File.ReadAllText(PathFile).Trim();
-                return Executable;
+                // A stale nexus-path.txt must not disable both the path display and
+                // the startup switch after the user moves or uninstalls Nexus.
+                if (!File.Exists(PathFile)) return null;
+                try
+                {
+                    string path = File.ReadAllText(PathFile).Trim();
+                    return !String.IsNullOrWhiteSpace(path) && File.Exists(path) ? path : null;
+                }
+                catch { return null; }
             }
         }
         public string Executable
         {
             get
             {
-                if (File.Exists(PathFile)) { string path = File.ReadAllText(PathFile).Trim(); if (File.Exists(path)) return path; }
+                string selected = SelectedExecutable;
+                if (selected != null) return selected;
                 string local = Path.Combine(root, "Nexus", "Nexus.exe");
                 if (File.Exists(local)) return local;
                 foreach (Environment.SpecialFolder folder in new[] { Environment.SpecialFolder.ProgramFilesX86, Environment.SpecialFolder.ProgramFiles })
@@ -256,6 +268,7 @@ namespace SpectrumControl
             if (!integration) throw new InvalidOperationException("测试模式不启动外部程序。");
             string path = Executable;
             if (path == null) throw new FileNotFoundException("未找到 Nexus，请先安装或选择 Nexus.exe。");
+            bool samePathRunning = false;
             foreach (Process process in Process.GetProcessesByName("Nexus"))
                 using (process)
                 {
@@ -265,7 +278,11 @@ namespace SpectrumControl
                     if (!String.Equals(Path.GetFullPath(runningPath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase))
                         throw new InvalidOperationException("另一目录的 Nexus 正在运行。请选择该 Nexus.exe，或先退出它。");
                     if (!preferences) return;
+                    samePathRunning = true;
                 }
+            // A second Nexus process cannot open the Preferences form; it only leaves
+            // a hidden helper window. Require the native Dock menu instead.
+            if (preferences && samePathRunning) return;
             // Nexus Free uses the bare "setup" argument, not Ultimate's "-setup".
             // https://forums.winstep.net/phpBB2/viewtopic.php?f=2&t=9854
             using (Process process = Process.Start(new ProcessStartInfo(path, preferences ? "setup" : "") { WorkingDirectory = Path.GetDirectoryName(path), UseShellExecute = true })) { }

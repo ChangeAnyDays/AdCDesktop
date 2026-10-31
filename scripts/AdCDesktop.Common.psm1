@@ -124,10 +124,13 @@ function Install-SkinData {
     $innerPath = Join-Path $CacheDir ([IO.Path]::GetFileNameWithoutExtension($ArchivePath) + '.rmskin')
     try {
         $innerName = [string](Get-ObjectValue $Dependency 'innerArchive')
-        $entry = if ($innerName) { @($outer.Entries | Where-Object { $_.FullName -eq $innerName } | Select-Object -First 1) } else { @($outer.Entries | Where-Object { $_.FullName -like '*.rmskin' } | Select-Object -First 1) }
-        if ($entry.Count -ne 1) { throw "No skin archive found in $ArchivePath" }
+        # PowerShell unwraps a one-element array returned from an if-block into a
+        # scalar. Re-wrap the result before probing .Count under StrictMode 2.
+        $entries = if ($innerName) { @($outer.Entries | Where-Object { $_.FullName -eq $innerName } | Select-Object -First 1) } else { @($outer.Entries | Where-Object { $_.FullName -like '*.rmskin' } | Select-Object -First 1) }
+        $entries = @($entries)
+        if ($entries.Count -ne 1) { throw "No skin archive found in $ArchivePath" }
         [void][IO.Directory]::CreateDirectory($CacheDir)
-        [IO.Compression.ZipFileExtensions]::ExtractToFile($entry[0], $innerPath, $true)
+        [IO.Compression.ZipFileExtensions]::ExtractToFile($entries[0], $innerPath, $true)
     } finally { $outer.Dispose() }
     $innerHash = [string](Get-ObjectValue $Dependency 'innerArchiveSha256')
     if ($innerHash -notmatch '^[a-fA-F0-9]{64}$' -or (Get-FileHash -LiteralPath $innerPath -Algorithm SHA256).Hash -ine $innerHash) { throw "Inner skin archive failed SHA256 verification: $SkinName" }

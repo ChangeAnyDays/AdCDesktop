@@ -94,8 +94,8 @@
       <Setter Property="Padding" Value="8,6"/><Setter Property="MinHeight" Value="30"/>
     </Style>
   </Window.Resources>
-  <Grid><Grid.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#102439" Offset="0"/><GradientStop Color="#0B1423" Offset="0.5"/><GradientStop Color="#141D35" Offset="1"/></LinearGradientBrush></Grid.Background><ScrollViewer x:Name="WorkspaceScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"><Grid x:Name="WorkspaceGrid" MinWidth="900" MinHeight="650" Margin="26,24,26,20">
-    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <Grid><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#102439" Offset="0"/><GradientStop Color="#0B1423" Offset="0.5"/><GradientStop Color="#141D35" Offset="1"/></LinearGradientBrush></Grid.Background><ScrollViewer x:Name="WorkspaceScroll" Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"><Grid x:Name="WorkspaceGrid" MinWidth="900" MinHeight="650" Margin="26,24,26,20">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
     <Grid Margin="0,0,0,19">
       <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
       <StackPanel>
@@ -233,9 +233,10 @@
         </Border>
       </StackPanel>
     </ScrollViewer>
-    <Grid x:Name="SpectrumFooter" Grid.Row="4" Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    </Grid></ScrollViewer>
+    <Grid x:Name="SpectrumFooter" Grid.Row="1" Margin="26,12,26,20"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
       <StackPanel VerticalAlignment="Center" Margin="0,0,12,0"><TextBlock x:Name="FeedbackText" Text="已读取当前设置" Foreground="#9CB4CD" FontSize="12" TextWrapping="Wrap"/><TextBlock Text="每次应用自动备份，可随时恢复原设置。" Foreground="#647F9C" FontSize="10" Margin="0,5,0,0"/></StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal"><Button x:Name="RestoreButton" Content="恢复原设置" Margin="0,0,8,0" AutomationProperties.AutomationId="RestoreButton"/><Button x:Name="ReloadButton" Content="重新读取" Margin="0,0,8,0" AutomationProperties.AutomationId="ReloadButton"/><Button x:Name="ApplyButton" Content="应用到桌面  →" Style="{StaticResource PrimaryButton}" MinWidth="130" AutomationProperties.AutomationId="ApplyButton"/></StackPanel>
     </Grid>
-  </Grid></ScrollViewer></Grid>
+  </Grid>
 </Window>

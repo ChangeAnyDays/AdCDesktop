@@ -22,6 +22,12 @@ public static class FixtureUiChecks
     private static int Integer(object value, string name) { return (int)value.GetType().GetProperty(name).GetValue(value, null); }
     private static bool Boolean(object value, string name) { return (bool)value.GetType().GetProperty(name).GetValue(value, null); }
     private static T Find<T>(string name) where T : class { return (T)window.FindName(name); }
+    private static bool IsInsideWindow(string name)
+    {
+        FrameworkElement element = Find<FrameworkElement>(name);
+        Rect bounds = element.TransformToAncestor(window).TransformBounds(new Rect(element.RenderSize));
+        return element.IsVisible && new Rect(0, 0, window.ActualWidth, window.ActualHeight).Contains(bounds);
+    }
     private static void Click(string name) { Find<Button>(name).RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); count++; }
 
@@ -155,6 +161,8 @@ public static class FixtureUiChecks
             DrainLayout();
             Check(window.IsLoaded && PresentationSource.FromVisual(window) != null,
                 "Fixture must create and render a real WPF window.");
+            foreach (string name in new[] { "RestoreButton", "ReloadButton", "ApplyButton" })
+                Check(IsInsideWindow(name), name + " must be visible without scrolling at the default window size.");
 
             Check(!Find<CheckBox>("SpectrumStartupToggle").IsEnabled && !Find<CheckBox>("NexusStartupToggle").IsEnabled,
                 "Fixture mode must disable both startup switches.");

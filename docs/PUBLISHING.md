@@ -5,6 +5,7 @@
 ```powershell
 .\scripts\Test-Publish.ps1
 .\tests\Test-Scripts.ps1
+.\tests\Test-SkinData.ps1
 .\tests\Test-Install.ps1
 .\tests\Test-StartupPreflight.ps1
 .\tests\Test-PublishGate.ps1

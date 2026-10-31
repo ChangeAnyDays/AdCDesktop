@@ -121,6 +121,21 @@ public static class ControlCenterTests
             var guarded = new NexusBackend(temporary, false);
             Throws(delegate { guarded.Apply(false, false, false); }, "Fixture mode must not write the registry.");
             Throws(delegate { guarded.Start(false); }, "Fixture mode must not start Nexus.");
+            Throws(delegate { guarded.Start(true); }, "Fixture mode must not open Nexus preferences.");
+
+            // A stale selected path must not hide a valid local Nexus or put its old
+            // path into the HKCU Run command.
+            string localNexus = Path.Combine(temporary, "Nexus", "Nexus.exe");
+            Directory.CreateDirectory(Path.GetDirectoryName(localNexus));
+            File.WriteAllText(localNexus, "fixture only - do not execute");
+            Directory.CreateDirectory(Path.Combine(temporary, "SpectrumControl"));
+            File.WriteAllText(Path.Combine(temporary, "SpectrumControl", "nexus-path.txt"), Path.Combine(temporary, "Moved", "Nexus.exe"));
+            var recovered = new NexusBackend(temporary, false);
+            Check(String.Equals(recovered.Executable, localNexus, StringComparison.OrdinalIgnoreCase),
+                "A stale nexus-path.txt must fall back to the local Nexus executable.");
+            Check(String.Equals(recovered.StartupExecutable, localNexus, StringComparison.OrdinalIgnoreCase),
+                "The startup command must not use a stale Nexus path.");
+
             Console.WriteLine("PASS: " + checks + " control center checks");
             return 0;
         }

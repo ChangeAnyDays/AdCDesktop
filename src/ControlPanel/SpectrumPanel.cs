@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("ADC 总控台")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.2.1.0")]
+[assembly: AssemblyVersion("1.2.2.0")]
 
 namespace SpectrumControl
 {
@@ -178,10 +178,11 @@ namespace SpectrumControl
             screenWidth = Forms.Screen.PrimaryScreen.Bounds.Width;
             screenHeight = Forms.Screen.PrimaryScreen.Bounds.Height;
             Window.MaxHeight = Math.Max(620, SystemParameters.WorkArea.Height - 35);
+            Window.Height = Math.Min(960, Window.MaxHeight);
             Window.MinHeight = Math.Min(650, Window.MaxHeight);
             Window.Width = Math.Min(1160, SystemParameters.WorkArea.Width - 30);
             Window.MinWidth = Math.Min(940, Window.Width);
-            Find<Slider>("WidthSlider").Maximum = Math.Max(screenWidth, 1000);
+            Find<Slider>("WidthSlider").Maximum = Math.Min(4096, Math.Max(screenWidth, 1000));
             WireSlider("WidthSlider", "WidthValue");
             WireSlider("HeightSlider", "HeightValue");
             WireSlider("SensitivitySlider", "SensitivityValue");
@@ -402,6 +403,11 @@ namespace SpectrumControl
             Find<Button>("NexusStartButton").Click += delegate { NexusAction(delegate { nexus.Start(false); NexusFeedback("已请求启动 Nexus。", false); }); };
             Find<Button>("NexusSettingsButton").Click += delegate { NexusAction(delegate
             {
+                if (nexus.Running)
+                {
+                    NexusFeedback("Nexus 已在运行。请右击 Dock 上的 Nexus 控制图标，选择「首选项 / Preferences」；这里不会另开隐藏实例。", false);
+                    return;
+                }
                 nexus.Start(true);
                 NexusFeedback("已请求打开原生设置；如未弹出，可点击 Nexus 控制图标或按默认快捷键 Ctrl+F11。", false);
             }); };
@@ -591,7 +597,7 @@ namespace SpectrumControl
             loading = true;
             try
             {
-                Find<Slider>("WidthSlider").Maximum = Math.Max(Math.Max(screenWidth, settings.Width), 1000);
+                Find<Slider>("WidthSlider").Maximum = Math.Min(4096, Math.Max(Math.Max(screenWidth, settings.Width), 1000));
                 Find<Slider>("HeightSlider").Maximum = Math.Max(300, settings.Height);
                 Find<Slider>("WidthSlider").Value = settings.Width;
                 Find<Slider>("HeightSlider").Value = settings.Height;
@@ -613,6 +619,8 @@ namespace SpectrumControl
         private void LoadSettings(SpectrumSettings settings)
         {
             loaded = settings.Clone(); StageSettings(settings);
+            // A reload (or an apply that rereads the desktop) ends any preset staging.
+            stagedBase = null;
             Find<TextBlock>("DirtyLabel").Text = "已与桌面同步";
             Find<TextBlock>("DirtyLabel").Foreground = Brush("#809BB7");
             Find<Button>("RestoreButton").IsEnabled = backend.HasOriginalBackup;
@@ -673,9 +681,9 @@ namespace SpectrumControl
             try
             {
                 SpectrumStatus status = backend.GetStatus();
-                string text = !status.Running ? "组件未运行" : status.SkinActive ? "频谱运行中" : "频谱已隐藏";
+                string text = !status.Running ? "频谱未运行" : !status.SkinActive ? "频谱未加载" : status.Visible ? "频谱运行中" : "频谱已隐藏";
                 Find<TextBlock>("RuntimeStatus").Text = text;
-                Find<Ellipse>("StatusDot").Fill = Brush(status.Running && status.SkinActive ? "#60E2AF" : "#F0B65A");
+                Find<Ellipse>("StatusDot").Fill = Brush(status.Visible ? "#60E2AF" : "#F0B65A");
                 Find<Button>("StartButton").Visibility = status.Running ? Visibility.Collapsed : Visibility.Visible;
             }
             catch { Find<TextBlock>("RuntimeStatus").Text = "暂时无法读取状态"; }

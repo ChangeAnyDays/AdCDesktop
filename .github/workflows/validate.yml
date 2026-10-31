@@ -26,6 +26,8 @@ jobs:
         run: .\tests\Test-PublishGate.ps1
       - name: Validate installation scripts without installing
         run: .\tests\Test-Scripts.ps1
+      - name: Test skin archive extraction under StrictMode
+        run: .\tests\Test-SkinData.ps1
       - name: Test startup checks without launching components
         run: .\tests\Test-StartupPreflight.ps1
       - name: Test offline installation with fake components
