@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param([switch]$SkipPlan)
 
 $ErrorActionPreference = 'Stop'
@@ -27,5 +27,29 @@ if (!$SkipPlan) {
     & $installScript -InstallDir $planRoot -Mode ControlPanel -WhatIf
     if (Test-Path -LiteralPath $planRoot) { throw 'WhatIf unexpectedly created the installation directory.' }
 }
+
+# Regression: Windows PowerShell 5.1 leaves $PSScriptRoot empty inside param() defaults.
+# Both entrypoints must resolve their own folder when -InstallDir is omitted.
+$startupFixture = Join-Path $PSScriptRoot ('.artifacts\startup-' + [Guid]::NewGuid().ToString('N') + ' [space]')
+try {
+    [void][IO.Directory]::CreateDirectory((Join-Path $startupFixture 'scripts'))
+    Copy-Item -LiteralPath (Join-Path $repositoryRoot 'Start-Desktop.ps1') -Destination $startupFixture
+    Copy-Item -LiteralPath (Join-Path $repositoryRoot 'Restore-Desktop.ps1') -Destination $startupFixture
+    Copy-Item -LiteralPath (Join-Path $repositoryRoot 'scripts\AdCDesktop.Common.psm1') -Destination (Join-Path $startupFixture 'scripts')
+    [IO.File]::WriteAllText((Join-Path $startupFixture 'desktop-style.json'),'{"schemaVersion":1,"components":{},"appearance":{},"wallpaper":{}}',(New-Object Text.UTF8Encoding($false)))
+    $startError = $null
+    try { & (Join-Path $startupFixture 'Start-Desktop.ps1') -WhatIf *> $null }
+    catch { $startError = $_.Exception.Message }
+    if ($startError) { throw ('Start-Desktop.ps1 did not fall back to its own folder: ' + $startError) }
+    $restoreError = $null
+    try { & (Join-Path $startupFixture 'Restore-Desktop.ps1') -WhatIf *> $null }
+    catch { $restoreError = $_.Exception.Message }
+    if ($restoreError) { throw ('Restore-Desktop.ps1 did not fall back to its own folder: ' + $restoreError) }
+}
+finally {
+    if (Test-Path -LiteralPath $startupFixture) { Remove-Item -LiteralPath $startupFixture -Recurse -Force }
+}
+Write-Output 'PASS: Start/Restore resolve their own folder when -InstallDir is omitted.'
+
 if ($SkipPlan) { Write-Output ("PASS: {0} PowerShell files parsed (syntax-only mode)." -f $scriptFiles.Count) }
 else { Write-Output ("PASS: {0} PowerShell files parsed; installation plan did not change the machine." -f $scriptFiles.Count) }
