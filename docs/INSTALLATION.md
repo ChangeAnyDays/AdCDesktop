@@ -4,7 +4,7 @@
 
 推荐 Windows 11 x64、Windows PowerShell 5.1、.NET Framework 4.8。构建使用系统已有编译器，不安装 SDK。
 
-安装目录应是本项目专用文件夹。可以包含中文和空格，不能直接使用盘符根目录，也不能覆盖源码仓库根目录。默认有 D 盘时使用 `D:\AdCDesktop`，否则使用 `%LOCALAPPDATA%\AdCDesktop`。
+安装目录应是本项目专用文件夹。可以包含中文和空格，不能直接使用盘符根目录，也不能覆盖源码仓库根目录。全新设备默认使用 `%LOCALAPPDATA%\AdCatDesktop`，不假设 D 盘存在或可写；检测到已有 `D:\AdCDesktop\desktop-style.json` 时沿用旧目录升级。
 
 ## 安装模式
 
@@ -19,9 +19,9 @@
 .\Install.ps1 -Mode Full -InstallDir 'E:\桌面工具' -IncludeNexus -IncludeTaskbar
 ```
 
-安装会下载并校验清单中的归档，安装所需数据、构建原创控制台，创建本机清单与入口。直接运行 `Install.ps1` 默认只准备文件，不启动组件；双击 `Install.cmd` 使用 Full 模式并追加 `-Launch`，安装完成后隐藏图标、自动隐藏任务栏，并启动 Rainmeter、频谱和 Nexus。不会添加开机启动。Nexus 官方安装器可能请求 Windows 管理员授权，需要用户在系统提示中允许。
+安装会下载并校验清单中的归档，安装所需数据、构建原创控制台，创建本机清单、桌面和开始菜单入口。直接运行 `Install.ps1` 默认只准备文件，不启动组件；双击 `Install.cmd` 使用 Full 模式并追加 `-Launch`，安装完成后隐藏图标、自动隐藏任务栏，并启动 Rainmeter、频谱和 Nexus。不会添加开机启动。Nexus 官方安装器可能请求 Windows 管理员授权，需要用户在系统提示中允许。
 
-Release 中的 `AdCat-Desktop-Setup-1.3.2.exe` 是单文件启动器：内部展开安装文件后调用同一个 `Install.cmd`，因此不需要手动解压；ZIP 仍保留为备用。
+Release 中的 `AdCat-Desktop-Setup-1.3.3.exe` 是单文件启动器：内部展开安装文件后调用同一个 `Install.cmd`，因此不需要手动解压；ZIP 仍保留为备用。
 
 安装后提供“启动 AdCat 桌面”和“恢复原桌面”两个入口。前者重新启动 Nexus/频谱并保持完整桌面效果；后者恢复安装前的图标、任务栏和壁纸。不再提供“标准桌面效果”快捷入口。
 

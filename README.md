@@ -2,7 +2,7 @@
 
 在一个窗口中管理音乐频谱和 Nexus 启动栏。频谱页面提供模拟音源预览；Nexus 页面提供启动、原生详细设置入口和悬停文字开关。仍支持选装透明任务栏和动态壁纸。
 
-> 1.3.2 正式版：已在 Windows 11 实际构建、安装并运行控制台，自动测试包含 313 项 WPF 交互与布局检查。预览仍使用模拟音源；Nexus 悬停效果、设置窗口响应和重启登录尚未完整验收，详见[测试报告](docs/TEST-REPORT.md)。
+> 1.3.3 正式版：已在 Windows 11 实际构建、安装并运行控制台，自动测试包含 313 项 WPF 交互与布局检查。预览仍使用模拟音源；Nexus 悬停效果、设置窗口响应和重启登录尚未完整验收，详见[测试报告](docs/TEST-REPORT.md)。
 
 原 1.0 频谱界面参考（不代表新的总控台布局）：
 
@@ -40,14 +40,14 @@
 
 ### 一键安装（无需解压）
 
-从 Releases 下载 `AdCat-Desktop-Setup-1.3.2.exe`，直接双击。程序会在临时目录内展开安装文件，自动下载/校验 Rainmeter、皮肤和 Nexus，构建控制台，创建快捷方式，应用完整桌面效果并启动。首次 Nexus 安装请在 Windows 管理员提示中点“是”。
+从 Releases 下载 `AdCat-Desktop-Setup-1.3.3.exe`，直接双击。程序会在临时目录内展开安装文件，使用包内预构建的控制台（不需要 C# 编译器），自动下载/校验 Rainmeter、皮肤和 Nexus，创建桌面与开始菜单快捷方式，应用完整桌面效果并启动。全新设备默认安装到 `%LOCALAPPDATA%\AdCatDesktop`，不要求 D 盘。首次 Nexus 安装请在 Windows 管理员提示中点“是”。
 
 安装后桌面提供：
 
 - **启动 AdCat 桌面**：重新启动 Nexus 和频谱，并保持完整桌面效果
 - **恢复原桌面**：恢复安装前的图标、任务栏和壁纸设置
 
-如果浏览器或 Windows 对未签名 EXE 弹出 SmartScreen，点“更多信息 → 仍要运行”。也可以下载 `AdCat-Desktop-Setup-1.3.2.zip` 作为备用，解压后双击 `Install.cmd`。
+如果浏览器或 Windows 对未签名 EXE 弹出 SmartScreen，点“更多信息 → 仍要运行”。也可以下载 `AdCat-Desktop-Setup-1.3.3.zip` 作为备用，解压后双击 `Install.cmd`。
 
 ## 新手教程
 
@@ -73,7 +73,7 @@
 .\scripts\Install-ControlCenter.ps1 -InstallDir 'D:\AdCDesktop' -Launch
 ```
 
-开发者可运行 `.\scripts\Build-Package.ps1` 生成 `artifacts/packages/AdCat-ControlCenter-1.3.2.0.zip` 和 SHA-256 校验文件。解压更新包后双击其中的 `Install.cmd`，选择已有安装根目录即可。无需重装 Rainmeter 或 Nexus；包内不含第三方程序或皮肤。
+开发者可运行 `.\scripts\Build-Package.ps1` 生成 `artifacts/packages/AdCat-ControlCenter-1.3.3.0.zip` 和 SHA-256 校验文件。解压更新包后双击其中的 `Install.cmd`，选择已有安装根目录即可。无需重装 Rainmeter 或 Nexus；包内不含第三方程序或皮肤。
 
 ## 完整桌面组合
 

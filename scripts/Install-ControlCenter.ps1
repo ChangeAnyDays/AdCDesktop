@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string]$InstallDir,
     [string]$PayloadPath,
@@ -121,6 +121,17 @@ try {
         $shortcut.IconLocation = $application + ',0'
         $shortcutChanged = $true
         $shortcut.Save()
+        $programsRoot = [Environment]::GetFolderPath('Programs')
+        if (![string]::IsNullOrWhiteSpace($programsRoot) -and (Test-Path -LiteralPath $programsRoot -PathType Container)) {
+            $programsDir = Join-Path $programsRoot 'AdCat 桌面'
+            [void][IO.Directory]::CreateDirectory($programsDir)
+            $startShortcut = $shell.CreateShortcut((Join-Path $programsDir 'AdCat 桌面.lnk'))
+            $startShortcut.TargetPath = $application
+            $startShortcut.Arguments = '--root "' + $rootArgument + '"'
+            $startShortcut.WorkingDirectory = $destination
+            $startShortcut.IconLocation = $application + ',0'
+            $startShortcut.Save()
+        }
     }
 }
 catch {

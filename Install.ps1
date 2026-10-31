@@ -20,7 +20,8 @@ $ErrorActionPreference = 'Stop'
 if (!$PSBoundParameters.ContainsKey('IncludeNexus')) { $IncludeNexus = $true }
 Import-Module (Join-Path $PSScriptRoot 'scripts\AdCDesktop.Common.psm1') -Force
 if (!$InstallDir) {
-    $InstallDir = if (Test-Path -LiteralPath 'D:\') { 'D:\AdCDesktop' } else { Join-Path $env:LOCALAPPDATA 'AdCDesktop' }
+    # Keep an existing D: install upgradeable, but never assume a new device has a writable D: drive.
+    $InstallDir = if (Test-Path -LiteralPath 'D:\AdCDesktop\desktop-style.json') { 'D:\AdCDesktop' } else { Join-Path $env:LOCALAPPDATA 'AdCatDesktop' }
 }
 $InstallDir = Get-FullInstallPath $InstallDir
 if ($InstallDir -ieq [IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\')) { throw 'Choose an installation directory separate from the source repository.' }
@@ -236,7 +237,7 @@ if ($IncludeNexus) {
     $nexusRelative = 'Nexus\Nexus.exe'
 }
 
-$panelOutput = if ($PreparedControlPanelPath) { Get-FullInstallPath $PreparedControlPanelPath } else { Join-Path $PSScriptRoot 'artifacts\control-panel' }
+$panelOutput = if ($PreparedControlPanelPath) { Get-FullInstallPath $PreparedControlPanelPath } elseif (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'control-panel\AdCDesktop.exe')) { Join-Path $PSScriptRoot 'control-panel' } else { Join-Path $PSScriptRoot 'artifacts\control-panel' }
 if (!(Test-Path -LiteralPath (Join-Path $panelOutput 'AdCDesktop.exe'))) {
     if ($PreparedControlPanelPath) { throw 'PreparedControlPanelPath must contain AdCDesktop.exe.' }
     & (Join-Path $PSScriptRoot 'scripts\Build-ControlPanel.ps1') -OutputDir $panelOutput
@@ -318,6 +319,18 @@ if (!$NoShortcuts -and !$Offline) {
         if (Test-Path -LiteralPath $shortcutPath) { $old = $shell.CreateShortcut($shortcutPath); if ($old.TargetPath -ine $item.Target) { $shortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) ('AdCDesktop-' + $item.Name + '.lnk') } }
         if (Test-Path -LiteralPath $shortcutPath) { $old = $shell.CreateShortcut($shortcutPath); if ($old.TargetPath -ine $item.Target) { Write-Warning "Existing shortcut was left untouched: $shortcutPath"; continue } }
         $shortcut = $shell.CreateShortcut($shortcutPath); $shortcut.TargetPath=$item.Target; $shortcut.Arguments=$item.Arguments; $shortcut.WorkingDirectory=$InstallDir; $shortcut.IconLocation=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe') + ',0'; $shortcut.Save()
+    }
+    $programsRoot = [Environment]::GetFolderPath('Programs')
+    if (![string]::IsNullOrWhiteSpace($programsRoot) -and (Test-Path -LiteralPath $programsRoot -PathType Container)) {
+        $programsDir = Join-Path $programsRoot 'AdCat 桌面'
+        [void][IO.Directory]::CreateDirectory($programsDir)
+        foreach ($item in @(@{Name='AdCat 桌面';Target=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe');Arguments=('--root "' + $InstallDir + '"')},@{Name='启动 AdCat 桌面';Target=(Join-Path $InstallDir 'Start-Desktop.cmd');Arguments=''},@{Name='恢复原桌面';Target=(Join-Path $InstallDir 'Restore-Desktop.cmd');Arguments=''})) {
+            $shortcutPath = Join-Path $programsDir ($item.Name + '.lnk')
+            $shortcut = $shell.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath=$item.Target; $shortcut.Arguments=$item.Arguments; $shortcut.WorkingDirectory=$InstallDir
+            $shortcut.IconLocation=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe') + ',0'
+            $shortcut.Save()
+        }
     }
 }
 if ($Launch -and !$Offline) {
