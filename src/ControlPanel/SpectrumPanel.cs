@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -235,6 +235,7 @@ namespace SpectrumControl
             Find<Button>("ApplyButton").Click += delegate { RunAction(delegate { backend.Apply(ReadEditors()); LoadSettings(backend.Read()); Feedback("已应用到桌面", false); }); };
             Find<Button>("ReloadButton").Click += delegate { RunAction(delegate { LoadSettings(backend.Read()); Feedback("已重新读取桌面设置", false); }); };
             Find<Button>("RestoreButton").Click += delegate { RunAction(delegate { backend.RestoreOriginal(); LoadSettings(backend.Read()); Feedback("已恢复使用控制台前的设置", false); }); };
+            Find<Button>("RestoreDesktopButton").Click += delegate { RestoreDesktop(); };
             Find<Button>("StartButton").Click += delegate { RunAction(delegate { backend.EnsureRunning(); RefreshStatus(); Feedback("组件已启动", false); }); };
             Find<Button>("SavePresetButton").Click += delegate { RunAction(delegate { SaveMyPreset(ReadEditors()); Feedback("已保存你的方案；桌面设置尚未改变", false); }); };
             Find<Button>("LoadPresetButton").Click += delegate { RunAction(delegate { StageSettings(LoadMyPreset()); MarkDirty(); Feedback("已载入你的方案，点击应用即可生效", false); }); };
@@ -701,6 +702,63 @@ namespace SpectrumControl
                 int border = 0x00C4D0D8; Native.DwmSetWindowAttribute(handle, 34, ref border, 4);
             }
             catch { }
+        }
+        private void RestoreDesktop()
+        {
+            MessageBoxResult answer = MessageBox.Show(Window,
+                "恢复原桌面会停止 Nexus 和频谱，并恢复安装前的桌面图标、任务栏和壁纸设置。\n\n是否继续？",
+                "恢复原桌面", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+            if (answer != MessageBoxResult.Yes) return;
+            string script = Path.Combine(root, "Restore-Desktop.ps1");
+            Button button = Find<Button>("RestoreDesktopButton");
+            if (!File.Exists(script))
+            {
+                Feedback("恢复脚本缺失，请重新安装完整包。", true);
+                return;
+            }
+            try
+            {
+                bool keepPanel = false;
+                try { keepPanel = File.ReadAllText(script).IndexOf("KeepPanel", StringComparison.OrdinalIgnoreCase) >= 0; } catch { }
+                ProcessStartInfo start = new ProcessStartInfo("powershell.exe",
+                    "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"" + script + "\" -InstallDir \"" + root + "\"" + (keepPanel ? " -KeepPanel" : ""));
+                start.UseShellExecute = false;
+                start.CreateNoWindow = true;
+                Process process = Process.Start(start);
+                if (process == null) throw new InvalidOperationException("无法启动恢复脚本。");
+                button.IsEnabled = false;
+                if (!keepPanel)
+                {
+                    // Older installs do not know -KeepPanel; their restore script will close this window.
+                    Window.Close();
+                    return;
+                }
+                Feedback("正在恢复原桌面，请稍候…", false);
+                process.EnableRaisingEvents = true;
+                process.Exited += delegate
+                {
+                    Window.Dispatcher.BeginInvoke(new Action(delegate
+                    {
+                        try
+                        {
+                            button.IsEnabled = true;
+                            if (process.ExitCode == 0)
+                            {
+                                Feedback("已恢复原桌面；Nexus 和频谱已停止", false);
+                                RefreshStatus();
+                                if (nexusPage) RefreshNexusStatus();
+                            }
+                            else Feedback("恢复原桌面未完成，退出代码 " + process.ExitCode, true);
+                        }
+                        finally { process.Dispose(); }
+                    }));
+                };
+            }
+            catch (Exception ex)
+            {
+                button.IsEnabled = true;
+                Feedback("无法恢复原桌面：" + ex.Message, true);
+            }
         }
         private void RefreshStatus()
         {

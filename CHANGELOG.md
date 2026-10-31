@@ -9,6 +9,7 @@
 - 修复 Windows PowerShell 5.1 下无参数启动/恢复时 `$PSScriptRoot` 在 `param()` 默认值中为空，导致 `An installation directory is required.`；脚本现在在函数体内回退到脚本目录，安装器生成的 `.cmd` 也会显式传入安装目录。
 - `Install.cmd` 现在使用 **Full 完整桌面** 并追加 `-Launch`：安装完成后隐藏桌面图标、自动隐藏任务栏，并自动启动 Rainmeter、频谱和 Nexus；新增 `ADC-Desktop-Setup-1.2.5.exe` 单文件安装程序（无需解压）和 ZIP 备用包。
 - 移除“标准桌面效果”入口；只保留完整桌面效果和“恢复原桌面”，避免用户在两个效果之间混淆。
+- 控制台顶部新增“恢复原桌面”按钮：确认后停止 Nexus/频谱，并恢复安装前的桌面图标、任务栏和壁纸；旧版安装缺少 `-KeepPanel` 时自动关闭控制台后执行恢复。
 
 ## 1.2.4 (preview)
 

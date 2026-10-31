@@ -1,5 +1,5 @@
 [CmdletBinding(SupportsShouldProcess=$true)]
-param([string]$InstallDir)
+param([string]$InstallDir,[switch]$KeepPanel)
 $ErrorActionPreference='Stop'
 # Windows PowerShell 5.1 does not populate $PSScriptRoot inside param() defaults.
 if ([string]::IsNullOrWhiteSpace($InstallDir)) { $InstallDir = $PSScriptRoot }
@@ -13,6 +13,7 @@ if (!$PSCmdlet.ShouldProcess($InstallDir,'Stop only this installation and restor
 $components=Get-ObjectValue $manifest 'components'
 $knownPaths=@()
 foreach($name in @('panel','rainmeter','nexus','translucenttb')){
+    if($KeepPanel -and $name -eq 'panel'){continue}
     $relative=[string](Get-ObjectValue $components $name)
     if($relative){$knownPaths+=Resolve-InstallComponent $InstallDir $relative}
 }

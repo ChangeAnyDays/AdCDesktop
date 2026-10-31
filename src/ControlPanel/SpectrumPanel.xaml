@@ -109,6 +109,7 @@
         <Border Background="#E8E2D7" CornerRadius="15" Padding="11,6" Margin="0,0,10,0">
           <StackPanel Orientation="Horizontal"><Ellipse x:Name="StatusDot" Fill="#5B7A69" Width="7" Height="7" Margin="0,0,7,0"/><TextBlock x:Name="RuntimeStatus" Text="正在读取状态" Foreground="#4F6B5B" FontSize="12"/></StackPanel>
         </Border>
+        <Button x:Name="RestoreDesktopButton" Content="恢复原桌面" Padding="12,6" Margin="0,0,8,0" ToolTip="停止 Nexus 和频谱，并恢复安装前的图标、任务栏和壁纸设置" AutomationProperties.AutomationId="RestoreDesktopButton"/>
         <Button x:Name="StartButton" Content="启动组件" Padding="12,6" Visibility="Collapsed" AutomationProperties.AutomationId="StartComponent"/>
       </StackPanel>
     </Grid>
