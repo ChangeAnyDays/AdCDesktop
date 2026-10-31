@@ -7,8 +7,8 @@
 - 保留原有布局与全部功能；313 项 WPF 交互/布局检查、72 后端、45 总控台、30 启动项测试通过。
 - 修复浅色标题栏在窗口激活后变回深色的问题；启动项默认保持关闭。
 - 修复 Windows PowerShell 5.1 下无参数启动/恢复时 `$PSScriptRoot` 在 `param()` 默认值中为空，导致 `An installation directory is required.`；脚本现在在函数体内回退到脚本目录，安装器生成的 `.cmd` 也会显式传入安装目录。
-- `Install.cmd` 现在默认追加 `-Launch`：安装完成后自动启动 Rainmeter、频谱和 Nexus；新增 `ADC-Desktop-Setup-1.2.5.exe` 单文件安装程序（无需解压）和 ZIP 备用包。`Install-Full.cmd` 继续用于完整桌面（隐藏图标/自动隐藏任务栏）并自动启动。
-- 新增 `Switch-Desktop.ps1` 和桌面快捷方式“完整桌面效果 / 标准桌面效果”：安装后无需重装即可在隐藏图标/自动隐藏任务栏与常驻图标/任务栏之间切换；“恢复原桌面”继续恢复安装前状态。
+- `Install.cmd` 现在使用 **Full 完整桌面** 并追加 `-Launch`：安装完成后隐藏桌面图标、自动隐藏任务栏，并自动启动 Rainmeter、频谱和 Nexus；新增 `ADC-Desktop-Setup-1.2.5.exe` 单文件安装程序（无需解压）和 ZIP 备用包。
+- 移除“标准桌面效果”入口；只保留完整桌面效果和“恢复原桌面”，避免用户在两个效果之间混淆。
 
 ## 1.2.4 (preview)
 

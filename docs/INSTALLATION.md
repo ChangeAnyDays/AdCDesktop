@@ -19,11 +19,11 @@
 .\Install.ps1 -Mode Full -InstallDir 'E:\桌面工具' -IncludeNexus -IncludeTaskbar
 ```
 
-安装会下载并校验清单中的归档，安装所需数据、构建原创控制台，创建本机清单与入口。直接运行 `Install.ps1` 默认只准备文件，不启动组件；双击 `Install.cmd` 会追加 `-Launch`，安装完成后自动启动 Rainmeter、频谱和 Nexus。`Install-Full.cmd` 同时使用 Full 模式，启动时会隐藏图标并自动隐藏任务栏。不会添加开机启动。Nexus 官方安装器可能请求 Windows 管理员授权，需要用户在系统提示中允许。
+安装会下载并校验清单中的归档，安装所需数据、构建原创控制台，创建本机清单与入口。直接运行 `Install.ps1` 默认只准备文件，不启动组件；双击 `Install.cmd` 使用 Full 模式并追加 `-Launch`，安装完成后隐藏图标、自动隐藏任务栏，并启动 Rainmeter、频谱和 Nexus。不会添加开机启动。Nexus 官方安装器可能请求 Windows 管理员授权，需要用户在系统提示中允许。
 
 Release 中的 `ADC-Desktop-Setup-1.2.5.exe` 是单文件启动器：内部展开安装文件后调用同一个 `Install.cmd`，因此不需要手动解压；ZIP 仍保留为备用。
 
-安装后桌面提供“完整桌面效果”和“标准桌面效果”两个切换快捷方式：前者隐藏图标并自动隐藏任务栏，后者显示图标并让任务栏常驻；两者都会启动 Nexus 和频谱。“恢复原桌面”负责恢复安装前的原始设置。`Switch-Desktop.ps1 -Mode Full|Standard` 是它们对应的命令行入口。
+安装后提供“启动AdC桌面美化”和“恢复原桌面”两个入口。前者重新启动 Nexus/频谱并保持完整桌面效果；后者恢复安装前的图标、任务栏和壁纸。不再提供“标准桌面效果”快捷入口。
 
 同目录重复安装会保留已有模式与频谱配置。若希望从 Full 改用仅控制台模式，先恢复原桌面，再为 ControlPanel 模式选择另一个专用目录。
 

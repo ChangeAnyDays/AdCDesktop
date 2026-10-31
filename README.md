@@ -31,23 +31,18 @@
 .\Install.ps1 -InstallDir 'D:\AdCDesktop' -IncludeNexus:$false
 ```
 
-也可直接双击 `Install.cmd`。没有 D 盘时，不指定目录会使用当前用户的本地应用数据目录。默认安装会准备文件和快捷方式，并加入 Nexus；安装结束后自动启动 Rainmeter、频谱和 Nexus。Nexus 官方安装器可能弹出 Windows 管理员授权，需要点“是”。不会添加开机自启。
-
-想要连桌面图标、任务栏一起变成完整桌面效果，双击 `Install-Full.cmd`；它会在安装后自动应用 Full 模式并启动组件。
+也可直接双击 `Install.cmd`。没有 D 盘时，不指定目录会使用当前用户的本地应用数据目录。双击入口会按 **Full 完整桌面** 安装：隐藏桌面图标、自动隐藏任务栏，并加入 Nexus；安装结束后自动启动 Rainmeter、频谱和 Nexus。Nexus 官方安装器可能弹出 Windows 管理员授权，需要点“是”。不会添加开机自启。
 
 完成后，Nexus 和频谱会自动打开；也可以双击桌面的 **ADC 总控台** 继续调整配色、滑块，再点击 **应用到桌面**。
 
 ### 一键安装（无需解压）
 
-从 Releases 下载 `ADC-Desktop-Setup-1.2.5.exe`，直接双击。程序会在临时目录内展开安装文件，自动下载/校验 Rainmeter、皮肤和 Nexus，构建控制台，创建快捷方式并启动。首次 Nexus 安装请在 Windows 管理员提示中点“是”。
+从 Releases 下载 `ADC-Desktop-Setup-1.2.5.exe`，直接双击。程序会在临时目录内展开安装文件，自动下载/校验 Rainmeter、皮肤和 Nexus，构建控制台，创建快捷方式，应用完整桌面效果并启动。首次 Nexus 安装请在 Windows 管理员提示中点“是”。
 
-安装后桌面会多出两个效果切换入口：
+安装后桌面提供：
 
-- **完整桌面效果**：隐藏桌面图标、自动隐藏任务栏，并启动 Nexus/频谱
-- **标准桌面效果**：显示桌面图标、任务栏常驻，并启动 Nexus/频谱
+- **启动AdC桌面美化**：重新启动 Nexus 和频谱，并保持完整桌面效果
 - **恢复原桌面**：恢复安装前的图标、任务栏和壁纸设置
-
-默认 `Install.cmd` 使用标准效果；想要安装后直接完整桌面，可用 `Install-Full.cmd` 或双击“完整桌面效果”。
 
 如果浏览器或 Windows 对未签名 EXE 弹出 SmartScreen，点“更多信息 → 仍要运行”。也可以下载 `ADC-Desktop-Setup-1.2.5.zip` 作为备用，解压后双击 `Install.cmd`。
 
