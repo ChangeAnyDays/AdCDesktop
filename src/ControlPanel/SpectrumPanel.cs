@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.3.6.0")]
+[assembly: AssemblyVersion("1.3.7.0")]
 
 namespace SpectrumControl
 {
@@ -485,6 +485,42 @@ namespace SpectrumControl
                         NexusAction(delegate { nexus.SelectExecutable(dialog.FileName); LoadNexusSettings(); });
                 }
             };
+            Find<Button>("NexusAddDockButton").Click += delegate
+            {
+                using (Forms.OpenFileDialog dialog = new Forms.OpenFileDialog())
+                {
+                    dialog.Title = "选择要加入 Nexus Dock 的应用";
+                    dialog.Filter = "应用程序|*.exe|所有文件|*.*";
+                    dialog.CheckFileExists = true;
+                    if (dialog.ShowDialog(new DialogOwner(new WindowInteropHelper(Window).Handle)) != Forms.DialogResult.OK) return;
+                    string selected = dialog.FileName;
+                    NexusAction(delegate
+                    {
+                        Window.Cursor = Cursors.Wait;
+                        try
+                        {
+                            string label = nexus.AddDockShortcut(selected);
+                            Find<TextBlock>("NexusDockFeedback").Text = "已加入 Dock：" + label + "。Nexus 已重启。";
+                            NexusFeedback("已加入 Dock：" + label, false);
+                        }
+                        finally { Window.Cursor = null; }
+                    });
+                }
+            };
+            Find<Button>("NexusShowDockButton").Click += delegate
+            {
+                NexusAction(delegate
+                {
+                    Window.Cursor = Cursors.Wait;
+                    try
+                    {
+                        nexus.ShowDock();
+                        Find<TextBlock>("NexusDockFeedback").Text = "Dock 已设为屏幕底部并保持可见，Nexus 已重启。";
+                        NexusFeedback("Dock 已显示在屏幕底部", false);
+                    }
+                    finally { Window.Cursor = null; }
+                });
+            };
             Find<Button>("NexusReloadButton").Click += delegate { LoadNexusSettings(); };
             Find<Button>("NexusApplyButton").Click += delegate { ApplyNexus(false); };
             Find<Button>("NexusRestoreButton").Click += delegate { ApplyNexus(true); };
@@ -621,6 +657,8 @@ namespace SpectrumControl
                 Find<Button>("NexusStartButton").IsEnabled = path != null && nexus.CanIntegrate;
                 Find<Button>("NexusSettingsButton").IsEnabled = path != null && nexus.CanIntegrate;
                 Find<Button>("NexusLocateButton").IsEnabled = nexus.CanIntegrate;
+                Find<Button>("NexusAddDockButton").IsEnabled = path != null && nexus.CanIntegrate;
+                Find<Button>("NexusShowDockButton").IsEnabled = path != null && nexus.CanIntegrate;
             }
             catch (Exception ex) { Find<TextBlock>("NexusStatus").Text = "无法读取 Nexus 状态：" + ex.Message; }
         }

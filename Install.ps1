@@ -227,12 +227,40 @@ if ($IncludeNexus) {
         $docks = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\WinSTEP2000\NeXuS\Docks', $true)
         if ($docks) {
             try {
-                if ([string]$docks.GetValue('DockOrientation1') -ne '3') {
-                    $docks.SetValue('DockOrientation1','3',[Microsoft.Win32.RegistryValueKind]::String)
-                    $docks.SetValue('DockDocked1','True',[Microsoft.Win32.RegistryValueKind]::String)
-                }
+                $docks.SetValue('DockOrientation1','3',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockDocked1','True',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockKeepVisible1','True',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockAutoHideMode1','0',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockAlignment1','2',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockEdgeOffset1','40',[Microsoft.Win32.RegistryValueKind]::String)
             } finally { $docks.Dispose() }
         }
+    }
+    if ($Launch -and !$Offline -and (Test-Path -LiteralPath $nexusExe -PathType Leaf)) {
+        # Let Nexus create its first profile/Dock, then pin the Dock to the bottom
+        # before Start-Desktop launches it for the user.
+        $nexusRunning = @(Get-Process Nexus -ErrorAction SilentlyContinue | Where-Object {
+            try { $_.Path -and ([IO.Path]::GetFullPath($_.Path) -ieq [IO.Path]::GetFullPath($nexusExe)) } catch { $false }
+        })
+        if (!$nexusRunning.Count) {
+            Start-Process -FilePath $nexusExe -WorkingDirectory (Split-Path -Parent $nexusExe) | Out-Null
+            Start-Sleep -Seconds 6
+        }
+        $docks = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\WinSTEP2000\NeXuS\Docks', $true)
+        if ($docks) {
+            try {
+                $docks.SetValue('DockOrientation1','3',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockDocked1','True',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockKeepVisible1','True',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockAutoHideMode1','0',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockAlignment1','2',[Microsoft.Win32.RegistryValueKind]::String)
+                $docks.SetValue('DockEdgeOffset1','40',[Microsoft.Win32.RegistryValueKind]::String)
+            } finally { $docks.Dispose() }
+        }
+        Get-Process Nexus -ErrorAction SilentlyContinue | Where-Object {
+            try { $_.Path -and ([IO.Path]::GetFullPath($_.Path) -ieq [IO.Path]::GetFullPath($nexusExe)) } catch { $false }
+        } | Stop-Process -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 1
     }
     $nexusRelative = 'Nexus\Nexus.exe'
 }

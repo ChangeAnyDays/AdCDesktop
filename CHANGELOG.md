@@ -1,5 +1,12 @@
 ﻿# Changelog
 
+## 1.3.7
+
+- Nexus 页新增“Dock 快捷入口”：在 AdCat 中直接选择任意 `.exe` 加入 Dock，自动退出并重启 Nexus。
+- 新增“显示 Dock”：把 Dock 固定到屏幕底部并保持可见，解决全新安装后 Dock 不出现。
+- 全新安装首次启动 Nexus 时不再用隐藏窗口启动，避免 Dock 窗口被抑制。
+- 安装完成后首次启动 Nexus、写入底部/保持可见的 Dock 配置，再交给 Start-Desktop 正式启动。
+
 ## 1.3.6
 
 - 修复干净设备在下载 Welfare/RetrOcOlOr 皮肤时被 `123.zhutix.com` 服务器内部错误中断的问题。

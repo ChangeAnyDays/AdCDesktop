@@ -254,7 +254,16 @@ function Start-InstalledComponent {
     # Repeat the read-only check immediately before launching, since processes
     # can change after Start-Desktop completes its initial preflight.
     $ready = Assert-InstalledComponentReady $Root $RelativePath
-    if (!$ready.IsRunning) { Start-Process -FilePath $ready.Path -WorkingDirectory ([IO.Path]::GetDirectoryName($ready.Path)) -WindowStyle Hidden }
+    if (!$ready.IsRunning) {
+        # Nexus creates its Dock as a separate top-level window. Launching it with
+        # STARTF_USESHOWWINDOW/Hidden can suppress that first Dock window on a new
+        # profile, so Nexus is started normally while Rainmeter stays hidden.
+        if ([IO.Path]::GetFileName($ready.Path) -ieq 'Nexus.exe') {
+            Start-Process -FilePath $ready.Path -WorkingDirectory ([IO.Path]::GetDirectoryName($ready.Path))
+        } else {
+            Start-Process -FilePath $ready.Path -WorkingDirectory ([IO.Path]::GetDirectoryName($ready.Path)) -WindowStyle Hidden
+        }
+    }
 }
 
 function Invoke-WallpaperControl {

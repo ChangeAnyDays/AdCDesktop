@@ -301,6 +301,95 @@ namespace SpectrumControl
             Start(false);
             return true;
         }
+        public string AddDockShortcut(string executablePath)
+        {
+            if (!integration) throw new InvalidOperationException("测试模式不修改 Nexus 配置。");
+            string path = Path.GetFullPath(executablePath);
+            if (!File.Exists(path) || !String.Equals(Path.GetExtension(path), ".exe", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("请选择一个有效的 .exe 应用。");
+            string nexusPath = Executable;
+            if (nexusPath == null) throw new FileNotFoundException("未找到 Nexus，请先安装或选择 Nexus.exe。");
+            StopForAppearance(nexusPath);
+            string label;
+            try { label = AddDockShortcutCore(path); }
+            catch
+            {
+                try { Start(false); } catch { }
+                throw;
+            }
+            Start(false);
+            return label;
+        }
+        public void ShowDock()
+        {
+            if (!integration) throw new InvalidOperationException("测试模式不修改 Nexus 配置。");
+            string path = Executable;
+            if (path == null) throw new FileNotFoundException("未找到 Nexus，请先安装或选择 Nexus.exe。");
+            StopForAppearance(path);
+            try
+            {
+                using (RegistryKey user = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32))
+                using (RegistryKey key = user.OpenSubKey(@"Software\WinSTEP2000\NeXuS\Docks", true))
+                {
+                    if (key == null) throw new InvalidOperationException("未找到 Nexus Dock 配置，请先启动一次 Nexus。");
+                    key.SetValue("DockOrientation1", "3", RegistryValueKind.String);
+                    key.SetValue("DockDocked1", "True", RegistryValueKind.String);
+                    key.SetValue("DockKeepVisible1", "True", RegistryValueKind.String);
+                    key.SetValue("DockAutoHideMode1", "0", RegistryValueKind.String);
+                    key.SetValue("DockAlignment1", "2", RegistryValueKind.String);
+                    key.SetValue("DockEdgeOffset1", "40", RegistryValueKind.String);
+                }
+            }
+            catch
+            {
+                try { Start(false); } catch { }
+                throw;
+            }
+            Start(false);
+        }
+        private string AddDockShortcutCore(string executablePath)
+        {
+            using (RegistryKey user = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32))
+            using (RegistryKey key = user.OpenSubKey(@"Software\WinSTEP2000\NeXuS\Docks", true))
+            {
+                if (key == null) throw new InvalidOperationException("未找到 Nexus Dock 配置，请先启动一次 Nexus。");
+                string rawCount = Convert.ToString(key.GetValue("DockNoItems1", ""), CultureInfo.InvariantCulture);
+                int count;
+                if (!Int32.TryParse(rawCount, NumberStyles.Integer, CultureInfo.InvariantCulture, out count) || count < 0)
+                    throw new InvalidOperationException("无法读取 Nexus Dock 项目数量，请先在 Nexus 中保存一次设置。");
+                for (int i = 0; i < count; i++)
+                {
+                    string existing = Convert.ToString(key.GetValue("1Path" + i, ""), CultureInfo.InvariantCulture);
+                    if (String.Equals(existing, executablePath, StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidOperationException("这个应用已经在 Dock 中：" + Path.GetFileName(executablePath));
+                }
+                string label = "";
+                try { label = (FileVersionInfo.GetVersionInfo(executablePath).FileDescription ?? "").Trim(); } catch { }
+                if (label.Length == 0) label = Path.GetFileNameWithoutExtension(executablePath);
+                string startPath = Path.GetDirectoryName(executablePath).TrimEnd('\\') + "\\";
+                string attr = Convert.ToString(key.GetValue("1Attr0", "1073807360"), CultureInfo.InvariantCulture);
+                string[] names = new[] { "1Label" + count, "1Path" + count, "1IconPath" + count, "1StartPath" + count, "1Type" + count, "1Attr" + count };
+                try
+                {
+                    key.SetValue(names[0], label, RegistryValueKind.String);
+                    key.SetValue(names[1], executablePath, RegistryValueKind.String);
+                    key.SetValue(names[2], executablePath, RegistryValueKind.String);
+                    key.SetValue(names[3], startPath, RegistryValueKind.String);
+                    key.SetValue(names[4], "1", RegistryValueKind.String);
+                    key.SetValue(names[5], attr, RegistryValueKind.String);
+                    key.SetValue("DockNoItems1", (count + 1).ToString(CultureInfo.InvariantCulture), RegistryValueKind.String);
+                    if (Convert.ToString(key.GetValue("1Path" + count, ""), CultureInfo.InvariantCulture) != executablePath)
+                        throw new IOException("Dock 项写入后未通过校验。");
+                }
+                catch
+                {
+                    foreach (string name in names) try { key.DeleteValue(name, false); } catch { }
+                    try { key.SetValue("DockNoItems1", count.ToString(CultureInfo.InvariantCulture), RegistryValueKind.String); } catch { }
+                    throw;
+                }
+                return label;
+            }
+        }
         public void ApplyAppearance(NexusAppearancePreset preset)
         {
             if (!integration) throw new InvalidOperationException("测试模式不修改 Nexus 配置。");
