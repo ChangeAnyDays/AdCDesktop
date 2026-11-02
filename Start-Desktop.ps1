@@ -1,4 +1,4 @@
-[CmdletBinding(SupportsShouldProcess=$true)]
+﻿[CmdletBinding(SupportsShouldProcess=$true)]
 param([string]$InstallDir,[switch]$ControlPanel)
 $ErrorActionPreference='Stop'
 # Windows PowerShell 5.1 does not populate $PSScriptRoot inside param() defaults.
@@ -60,6 +60,12 @@ if ($changesShell) {
 foreach ($name in @('nexus','rainmeter','translucenttb')) {
     $relative=[string](Get-ObjectValue $components $name)
     if ($relative) { Start-InstalledComponent $InstallDir $relative }
+}
+if (![bool](Get-ObjectValue $appearance 'taskbarAutoHide' $false)) {
+    # Nexus applies its own taskbar auto-hide while starting; re-assert the
+    # documented "taskbar stays visible" setting after all components are up.
+    Initialize-DesktopShell
+    [AdCDesktop.NativeShell]::SetTaskbarAutoHide($false)
 }
 if ($ControlPanel) {
     $panel=Resolve-InstallComponent $InstallDir ([string](Get-ObjectValue $components 'panel'))

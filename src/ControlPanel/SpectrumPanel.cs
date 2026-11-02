@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.3.9.0")]
+[assembly: AssemblyVersion("1.4.0.0")]
 
 namespace SpectrumControl
 {

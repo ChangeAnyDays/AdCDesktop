@@ -326,7 +326,7 @@ if ($project -and (!$existingManifest -or $WallpaperProject)) {
 $manifest = [ordered]@{
     schemaVersion=1; mode=$Mode; installRoot=$InstallDir; installedAt=(Get-Date -Format 'o')
     components=[ordered]@{rainmeter='Rainmeter\Rainmeter.exe';panel='SpectrumControl\AdCDesktop.exe';nexus=$nexusRelative;translucenttb=$tbbRelative}
-    appearance=[ordered]@{hideDesktopIcons=($Mode -eq 'Full');taskbarAutoHide=($Mode -eq 'Full')}
+    appearance=[ordered]@{hideDesktopIcons=($Mode -eq 'Full');taskbarAutoHide=$false}
     wallpaper=[ordered]@{enginePath=$engine;projectPath=$project;workshopId='3113287126';workshopUrl='https://steamcommunity.com/sharedfiles/filedetails/?id=3113287126'}
 }
 Write-DesktopJson (Join-Path $InstallDir 'desktop-style.json') $manifest

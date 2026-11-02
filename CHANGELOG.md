@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## 1.4.0
+
+- 完整桌面默认不再自动隐藏任务栏；保留桌面图标隐藏和 Nexus Dock，避免用户找不到任务栏。
+- 修复旧安装清单只写了 Nexus 路径但未启用的问题；Start-Desktop 会继续启动已安装的 Nexus。
+- 当前安装已把 `taskbarAutoHide` 改为 `false`，并恢复任务栏显示。
+
 ## 1.3.9
 
 - Dock 快捷入口卡片直接注明多选方法：按住 Ctrl 逐个点选 .exe，或按 Shift 选择连续范围，再点“打开”。
