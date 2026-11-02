@@ -90,7 +90,12 @@ function Get-VerifiedArchive {
         Write-Host "Downloading $name"
         $temporary = $path + '.download'
         try {
-            Invoke-WebRequest -Uri $url -OutFile $temporary -UseBasicParsing
+            $referer = [string](Get-ObjectValue $Dependency 'referer')
+            if ([string]::IsNullOrWhiteSpace($referer)) {
+                Invoke-WebRequest -Uri $url -OutFile $temporary -UseBasicParsing
+            } else {
+                Invoke-WebRequest -Uri $url -OutFile $temporary -UseBasicParsing -Headers @{ Referer = $referer } -UserAgent 'Mozilla/5.0'
+            }
             if ((Get-FileHash -LiteralPath $temporary -Algorithm SHA256).Hash -ine $expected) { throw "SHA256 mismatch for $name; no installer was started." }
             Move-Item -LiteralPath $temporary -Destination $path
         } finally { if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary -Force } }
