@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.4.0.0")]
+[assembly: AssemblyVersion("1.5.0.0")]
 
 namespace SpectrumControl
 {
@@ -162,6 +162,7 @@ namespace SpectrumControl
         private readonly NexusBackend nexus;
         private bool nexusLoading;
         private bool nexusDirty;
+        private bool nexusDockRefreshing;
         private readonly StartupBackend startup;
         private bool refreshingStartup;
         private double previewCanvasWidth, previewCanvasHeight;
@@ -523,6 +524,8 @@ namespace SpectrumControl
                     finally { Window.Cursor = null; }
                 });
             };
+            Find<CheckBox>("NexusDockToggle").Checked += delegate { if (!nexusDockRefreshing) SetDockEnabled(true); };
+            Find<CheckBox>("NexusDockToggle").Unchecked += delegate { if (!nexusDockRefreshing) SetDockEnabled(false); };
             Find<Button>("NexusReloadButton").Click += delegate { LoadNexusSettings(); };
             Find<Button>("NexusApplyButton").Click += delegate { ApplyNexus(false); };
             Find<Button>("NexusRestoreButton").Click += delegate { ApplyNexus(true); };
@@ -563,6 +566,21 @@ namespace SpectrumControl
             try { action(); }
             catch (Exception ex) { NexusFeedback("操作未完成：" + ex.Message, true); }
             finally { RefreshNexusStatus(); }
+        }
+        private void SetDockEnabled(bool enabled)
+        {
+            NexusAction(delegate
+            {
+                Window.Cursor = Cursors.Wait;
+                try
+                {
+                    if (enabled) nexus.Start(false); else nexus.StopDock();
+                    Find<TextBlock>("NexusDockFeedback").Text = enabled ? "Dock 已启动。" : "Dock 已关闭，Nexus 已退出。";
+                    NexusFeedback(enabled ? "Dock 已启动" : "Dock 已关闭", false);
+                }
+                finally { Window.Cursor = null; }
+                RefreshNexusStatus();
+            });
         }
         private void ApplyNexusAppearance(string presetId, bool restore)
         {
@@ -661,6 +679,13 @@ namespace SpectrumControl
                 Find<Button>("NexusLocateButton").IsEnabled = nexus.CanIntegrate;
                 Find<Button>("NexusAddDockButton").IsEnabled = path != null && nexus.CanIntegrate;
                 Find<Button>("NexusShowDockButton").IsEnabled = path != null && nexus.CanIntegrate;
+                nexusDockRefreshing = true;
+                try
+                {
+                    Find<CheckBox>("NexusDockToggle").IsChecked = nexus.Running;
+                    Find<CheckBox>("NexusDockToggle").IsEnabled = path != null && nexus.CanIntegrate;
+                }
+                finally { nexusDockRefreshing = false; }
             }
             catch (Exception ex) { Find<TextBlock>("NexusStatus").Text = "无法读取 Nexus 状态：" + ex.Message; }
         }

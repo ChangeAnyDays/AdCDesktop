@@ -5,6 +5,9 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
 using Microsoft.Win32;
 
 namespace SpectrumControl
@@ -288,6 +291,8 @@ namespace SpectrumControl
             // Nexus Free uses the bare "setup" argument, not Ultimate's "-setup".
             // https://forums.winstep.net/phpBB2/viewtopic.php?f=2&t=9854
             using (Process process = Process.Start(new ProcessStartInfo(path, preferences ? "setup" : "") { WorkingDirectory = Path.GetDirectoryName(path), UseShellExecute = true })) { }
+            Thread.Sleep(900);
+            TaskbarVisibility.ShowTaskbar();
         }
         public void Apply(bool labels, bool tips, bool restore)
         {
@@ -300,6 +305,14 @@ namespace SpectrumControl
             if (!integration || Running) return false;
             Start(false);
             return true;
+        }
+        public void StopDock()
+        {
+            if (!integration) throw new InvalidOperationException("测试模式不修改 Nexus 配置。");
+            string path = Executable;
+            if (path == null) return;
+            StopForAppearance(path);
+            TaskbarVisibility.ShowTaskbar();
         }
         public string AddDockShortcut(string executablePath)
         {
@@ -477,6 +490,43 @@ namespace SpectrumControl
                 }
             }
             finally { foreach (Process process in same) process.Dispose(); }
+        }
+    }
+
+    internal static class TaskbarVisibility
+    {
+        [StructLayout(LayoutKind.Sequential)]
+        private struct APPBARDATA
+        {
+            public uint Size;
+            public IntPtr Window;
+            public uint Callback;
+            public uint Edge;
+            public int Left, Top, Right, Bottom;
+            public IntPtr Parameter;
+        }
+        [DllImport("shell32.dll")]
+        private static extern UIntPtr SHAppBarMessage(uint message, ref APPBARDATA data);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern IntPtr FindWindow(string className, string title);
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr window, int command);
+
+        public static void ShowTaskbar()
+        {
+            IntPtr window = FindWindow("Shell_TrayWnd", null);
+            if (window == IntPtr.Zero) return;
+            APPBARDATA data = new APPBARDATA();
+            data.Size = (uint)Marshal.SizeOf(typeof(APPBARDATA));
+            data.Window = window;
+            uint state = (uint)SHAppBarMessage(4, ref data).ToUInt64();
+            uint desired = state & ~1u;
+            if (state != desired)
+            {
+                data.Parameter = new IntPtr((long)desired);
+                SHAppBarMessage(10, ref data);
+            }
+            ShowWindow(window, 8);
         }
     }
 }

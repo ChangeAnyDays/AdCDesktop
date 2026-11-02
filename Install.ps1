@@ -259,21 +259,54 @@ if ($IncludeNexus) {
             Start-Process -FilePath $nexusExe -WorkingDirectory (Split-Path -Parent $nexusExe) | Out-Null
             Start-Sleep -Seconds 6
         }
-        $docks = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\WinSTEP2000\NeXuS\Docks', $true)
-        if ($docks) {
-            try {
-                $docks.SetValue('DockOrientation1','3',[Microsoft.Win32.RegistryValueKind]::String)
-                $docks.SetValue('DockDocked1','True',[Microsoft.Win32.RegistryValueKind]::String)
-                $docks.SetValue('DockKeepVisible1','True',[Microsoft.Win32.RegistryValueKind]::String)
-                $docks.SetValue('DockAutoHideMode1','0',[Microsoft.Win32.RegistryValueKind]::String)
-                $docks.SetValue('DockAlignment1','2',[Microsoft.Win32.RegistryValueKind]::String)
-                $docks.SetValue('DockEdgeOffset1','40',[Microsoft.Win32.RegistryValueKind]::String)
-            } finally { $docks.Dispose() }
-        }
         Get-Process Nexus -ErrorAction SilentlyContinue | Where-Object {
             try { $_.Path -and ([IO.Path]::GetFullPath($_.Path) -ieq [IO.Path]::GetFullPath($nexusExe)) } catch { $false }
         } | Stop-Process -Force -ErrorAction SilentlyContinue
         Start-Sleep -Seconds 1
+        $docks = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\WinSTEP2000\NeXuS\Docks', $true)
+        if ($docks) {
+            try {
+                $appearance = [ordered]@{
+                    DockOrientation1='3'; DockDocked1='True'; DockKeepVisible1='True'; DockAutoHideMode1='0'
+                    DockAlignment1='2'; DockEdgeOffset1='100'; DockIconSize1='40'; DockReflectionSize1='128'
+                    DockRainDrops1='True'; DockWaterRipple1='True'; DockMagPixels1='128'; DockMagAmplitude1='5'
+                    DockIconBounce1='23'; DockIconAlpha1='218'; DockAlpha1='141'; DockFxEffect1='4'
+                    DockLiquidReflection1='True'; DockSkinningMode1='1'; DockManualTheme1='True'; DockShowLabels1='False'
+                }
+                foreach ($pair in $appearance.GetEnumerator()) { $docks.SetValue($pair.Key,$pair.Value,[Microsoft.Win32.RegistryValueKind]::String) }
+                $items = @(
+                    @{Label='开始菜单';Path='*20';Type='2'},
+                    @{Label='快速启动';Path='*95';Type='2'},
+                    @{Label='AdCat 桌面';Path=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe');Type='1'},
+                    @{Label='文件资源管理器';Path=(Join-Path $env:WINDIR 'explorer.exe');Type='1'}
+                )
+                $chrome = 'C:\Program Files\Google\Chrome\Application\chrome.exe'
+                if (Test-Path -LiteralPath $chrome -PathType Leaf) {
+                    $items = @($items[0], @{Label='Google Chrome';Path=$chrome;Type='1'}, $items[1], $items[2], $items[3])
+                }
+                for ($i=0; $i -lt 12; $i++) {
+                    foreach ($prefix in @('1Label','1Path','1IconPath','1StartPath','1Type','1Attr','1Hotkey')) {
+                        try { $docks.DeleteValue($prefix + $i, $false) } catch { }
+                    }
+                }
+                for ($i=0; $i -lt $items.Count; $i++) {
+                    $item = $items[$i]
+                    $docks.SetValue('1Label' + $i, [string]$item.Label, [Microsoft.Win32.RegistryValueKind]::String)
+                    $docks.SetValue('1Path' + $i, [string]$item.Path, [Microsoft.Win32.RegistryValueKind]::String)
+                    $docks.SetValue('1Type' + $i, [string]$item.Type, [Microsoft.Win32.RegistryValueKind]::String)
+                    if ([string]$item.Type -eq '1') {
+                        $docks.SetValue('1IconPath' + $i, [string]$item.Path, [Microsoft.Win32.RegistryValueKind]::String)
+                        $docks.SetValue('1StartPath' + $i, (Split-Path -Parent ([string]$item.Path)).TrimEnd('\') + '\', [Microsoft.Win32.RegistryValueKind]::String)
+                        $docks.SetValue('1Attr' + $i, '1073807360', [Microsoft.Win32.RegistryValueKind]::String)
+                    }
+                }
+                $docks.SetValue('DockNoItems1', [string]$items.Count, [Microsoft.Win32.RegistryValueKind]::String)
+            } finally { $docks.Dispose() }
+        }
+        $profileKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\WinSTEP2000\NeXuS', $true)
+        if ($profileKey) {
+            try { $profileKey.SetValue('HideTaskbar','False',[Microsoft.Win32.RegistryValueKind]::String) } finally { $profileKey.Dispose() }
+        }
     }
     $nexusRelative = 'Nexus\Nexus.exe'
 }
