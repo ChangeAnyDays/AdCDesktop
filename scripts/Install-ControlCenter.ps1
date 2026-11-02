@@ -8,7 +8,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 if ($env:OS -ne 'Windows_NT') { throw 'Windows 11 and .NET Framework 4.8 are required.' }
-$payloadFiles = @('AdCDesktop.exe','AdCDesktop.exe.config','QuickStart.html')
+$payloadFiles = @('AdCDesktop.exe','AdCDesktop.exe.config','QuickStart.html','Uninstall-AdCat.ps1','Uninstall.cmd')
 if (!$PayloadPath) {
     $PayloadPath = Join-Path $PSScriptRoot 'control-panel'
     if (!(Test-Path -LiteralPath $PayloadPath)) {

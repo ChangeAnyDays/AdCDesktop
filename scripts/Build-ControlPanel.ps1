@@ -38,4 +38,6 @@ if ($LASTEXITCODE -ne 0) { throw 'Control panel compilation failed.' }
 $runtimeConfig = '<?xml version="1.0" encoding="utf-8"?><configuration><startup><supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.8" /></startup></configuration>'
 [IO.File]::WriteAllText(($exe + '.config'), $runtimeConfig, (New-Object Text.UTF8Encoding($false)))
 Copy-Item -LiteralPath (Join-Path $repoRoot 'docs\QuickStart.html') -Destination (Join-Path $OutputDir 'QuickStart.html') -Force
+Copy-Item -LiteralPath (Join-Path $repoRoot 'Uninstall-AdCat.ps1') -Destination (Join-Path $OutputDir 'Uninstall-AdCat.ps1') -Force
+Copy-Item -LiteralPath (Join-Path $repoRoot 'Uninstall.cmd') -Destination (Join-Path $OutputDir 'Uninstall.cmd') -Force
 Write-Output $exe

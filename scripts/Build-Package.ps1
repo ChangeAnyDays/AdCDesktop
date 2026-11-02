@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 if (!$SkipBuild) { & (Join-Path $PSScriptRoot 'Build-ControlPanel.ps1') }
 $payload = Join-Path $root 'artifacts\control-panel'
-foreach ($file in @('AdCDesktop.exe','AdCDesktop.exe.config','QuickStart.html')) {
+foreach ($file in @('AdCDesktop.exe','AdCDesktop.exe.config','QuickStart.html','Uninstall-AdCat.ps1','Uninstall.cmd')) {
     if (!(Test-Path -LiteralPath (Join-Path $payload $file) -PathType Leaf)) { throw "Missing build output: $file" }
 }
 $version = [Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $payload 'AdCDesktop.exe')).FileVersion
@@ -13,7 +13,7 @@ $packageRoot = Join-Path $root 'artifacts\packages'
 # A fresh staging directory prevents old or personal files entering a later ZIP.
 $stage = Join-Path $packageRoot ('staging\AdCat-ControlCenter-' + $version + '-' + [Guid]::NewGuid().ToString('N'))
 [void][IO.Directory]::CreateDirectory((Join-Path $stage 'control-panel'))
-foreach ($file in @('AdCDesktop.exe','AdCDesktop.exe.config','QuickStart.html')) {
+foreach ($file in @('AdCDesktop.exe','AdCDesktop.exe.config','QuickStart.html','Uninstall-AdCat.ps1','Uninstall.cmd')) {
     Copy-Item -LiteralPath (Join-Path $payload $file) -Destination (Join-Path $stage 'control-panel') -Force
 }
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Install-ControlCenter.ps1') -Destination $stage -Force

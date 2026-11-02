@@ -1,11 +1,11 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $installer = Join-Path $repositoryRoot 'scripts\Install-ControlCenter.ps1'
 $buildPayload = Join-Path $repositoryRoot 'artifacts\control-panel'
-$files = @('AdCDesktop.exe','AdCDesktop.exe.config','QuickStart.html')
+$files = @('AdCDesktop.exe','AdCDesktop.exe.config','QuickStart.html','Uninstall-AdCat.ps1','Uninstall.cmd')
 foreach ($file in $files) {
     if (!(Test-Path -LiteralPath (Join-Path $buildPayload $file) -PathType Leaf)) { throw 'Build the control panel before running the update installer fixtures.' }
 }

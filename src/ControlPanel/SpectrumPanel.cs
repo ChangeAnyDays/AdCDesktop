@@ -871,6 +871,7 @@ namespace SpectrumControl
                 "卸载 AdCat 桌面", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
             if (answer != MessageBoxResult.Yes) return;
             string script = Path.Combine(root, "Uninstall-AdCat.ps1");
+            if (!File.Exists(script)) script = Path.Combine(root, "SpectrumControl", "Uninstall-AdCat.ps1");
             if (!File.Exists(script))
             {
                 Feedback("卸载脚本缺失，请使用 1.3.5 或更新版本的完整安装包。", true);
