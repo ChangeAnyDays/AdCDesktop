@@ -303,22 +303,45 @@ namespace SpectrumControl
         }
         public string AddDockShortcut(string executablePath)
         {
+            List<string> added = AddDockShortcuts(new[] { executablePath });
+            return added[0];
+        }
+        public List<string> AddDockShortcuts(IEnumerable<string> executablePaths)
+        {
             if (!integration) throw new InvalidOperationException("测试模式不修改 Nexus 配置。");
-            string path = Path.GetFullPath(executablePath);
-            if (!File.Exists(path) || !String.Equals(Path.GetExtension(path), ".exe", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("请选择一个有效的 .exe 应用。");
+            var paths = new List<string>();
+            foreach (string selected in executablePaths)
+            {
+                string path = Path.GetFullPath(selected);
+                if (!File.Exists(path) || !String.Equals(Path.GetExtension(path), ".exe", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("请选择有效的 .exe 应用：" + Path.GetFileName(selected));
+                if (!paths.Exists(delegate(string item) { return String.Equals(item, path, StringComparison.OrdinalIgnoreCase); })) paths.Add(path);
+            }
+            if (paths.Count == 0) throw new InvalidOperationException("没有选择应用。");
             string nexusPath = Executable;
             if (nexusPath == null) throw new FileNotFoundException("未找到 Nexus，请先安装或选择 Nexus.exe。");
             StopForAppearance(nexusPath);
-            string label;
-            try { label = AddDockShortcutCore(path); }
+            var added = new List<string>();
+            try
+            {
+                foreach (string path in paths)
+                {
+                    try { added.Add(AddDockShortcutCore(path)); }
+                    catch (InvalidOperationException ex)
+                    {
+                        if (ex.Message.IndexOf("已经在 Dock", StringComparison.Ordinal) >= 0) continue;
+                        throw;
+                    }
+                }
+                if (added.Count == 0) throw new InvalidOperationException("选中的应用都已在 Dock 中。");
+            }
             catch
             {
                 try { Start(false); } catch { }
                 throw;
             }
             Start(false);
-            return label;
+            return added;
         }
         public void ShowDock()
         {

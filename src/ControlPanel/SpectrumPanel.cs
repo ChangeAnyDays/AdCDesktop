@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.3.7.0")]
+[assembly: AssemblyVersion("1.3.8.0")]
 
 namespace SpectrumControl
 {
@@ -489,19 +489,21 @@ namespace SpectrumControl
             {
                 using (Forms.OpenFileDialog dialog = new Forms.OpenFileDialog())
                 {
-                    dialog.Title = "选择要加入 Nexus Dock 的应用";
+                    dialog.Title = "选择要加入 Nexus Dock 的应用（可多选）";
                     dialog.Filter = "应用程序|*.exe|所有文件|*.*";
                     dialog.CheckFileExists = true;
+                    dialog.Multiselect = true;
                     if (dialog.ShowDialog(new DialogOwner(new WindowInteropHelper(Window).Handle)) != Forms.DialogResult.OK) return;
-                    string selected = dialog.FileName;
+                    string[] selected = dialog.FileNames;
                     NexusAction(delegate
                     {
                         Window.Cursor = Cursors.Wait;
                         try
                         {
-                            string label = nexus.AddDockShortcut(selected);
-                            Find<TextBlock>("NexusDockFeedback").Text = "已加入 Dock：" + label + "。Nexus 已重启。";
-                            NexusFeedback("已加入 Dock：" + label, false);
+                            System.Collections.Generic.List<string> labels = nexus.AddDockShortcuts(selected);
+                            string summary = labels.Count == 1 ? labels[0] : String.Join("、", labels.ToArray());
+                            Find<TextBlock>("NexusDockFeedback").Text = "已加入 " + labels.Count + " 个应用到 Dock：" + summary + "。Nexus 已重启。";
+                            NexusFeedback("已加入 " + labels.Count + " 个应用到 Dock", false);
                         }
                         finally { Window.Cursor = null; }
                     });

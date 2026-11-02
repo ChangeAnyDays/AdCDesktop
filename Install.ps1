@@ -215,7 +215,20 @@ if ($IncludeNexus) {
         if ($expected -notmatch '^[a-fA-F0-9]{64}$' -or (Get-FileHash -LiteralPath $setup -Algorithm SHA256).Hash -ine $expected) { throw 'Nexus installer failed SHA256 verification.' }
         Write-Host 'Nexus is optional proprietary freeware. Windows may ask for administrator approval; approve the official installer in Windows to continue. This script does not approve it for you.'
         $arguments = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /TASKS= /DIR="' + (Join-Path $InstallDir 'Nexus') + '"'
-        $process = Start-Process -FilePath $setup -ArgumentList $arguments -PassThru -Wait
+        $installerTemp = Join-Path $InstallDir '.installer-temp'
+        [void][IO.Directory]::CreateDirectory($installerTemp)
+        $previousTemp = $env:TEMP
+        $previousTmp = $env:TMP
+        try {
+            $env:TEMP = $installerTemp
+            $env:TMP = $installerTemp
+            $process = Start-Process -FilePath $setup -ArgumentList $arguments -PassThru -Wait
+        }
+        finally {
+            $env:TEMP = $previousTemp
+            $env:TMP = $previousTmp
+            Remove-Item -LiteralPath $installerTemp -Recurse -Force -ErrorAction SilentlyContinue
+        }
         if ($process.ExitCode -ne 0 -or !(Test-Path -LiteralPath $nexusExe)) { throw 'Nexus installation was cancelled or did not complete.' }
         $run = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Microsoft\Windows\CurrentVersion\Run', $true)
         if ($run) { try { $value = [string]$run.GetValue('Nexus'); if ($value -like ('*' + $nexusExe + '*')) { $run.DeleteValue('Nexus', $false) } } finally { $run.Dispose() } }
