@@ -1,5 +1,5 @@
-[CmdletBinding(SupportsShouldProcess=$true)]
-param([string]$InstallDir,[switch]$KeepPanel)
+﻿[CmdletBinding(SupportsShouldProcess=$true)]
+param([string]$InstallDir,[switch]$KeepPanel,[switch]$Clean)
 $ErrorActionPreference='Stop'
 # Windows PowerShell 5.1 does not populate $PSScriptRoot inside param() defaults.
 if ([string]::IsNullOrWhiteSpace($InstallDir)) { $InstallDir = $PSScriptRoot }
@@ -25,8 +25,13 @@ foreach($path in $knownPaths){
 }
 Initialize-DesktopShell
 $key=[Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced')
-try{$key.SetValue('HideIcons',0,[Microsoft.Win32.RegistryValueKind]::DWord)}finally{$key.Dispose()}
-[AdCDesktop.NativeShell]::RefreshIcons($true)
+if($Clean){
+    try{$key.SetValue('HideIcons',1,[Microsoft.Win32.RegistryValueKind]::DWord)}finally{$key.Dispose()}
+    [AdCDesktop.NativeShell]::RefreshIcons($false)
+}else{
+    try{$key.SetValue('HideIcons',0,[Microsoft.Win32.RegistryValueKind]::DWord)}finally{$key.Dispose()}
+    [AdCDesktop.NativeShell]::RefreshIcons($true)
+}
 [AdCDesktop.NativeShell]::SetTaskbarAutoHide($false)
 if($backup){
     $wallpaper=Get-ObjectValue $manifest 'wallpaper'

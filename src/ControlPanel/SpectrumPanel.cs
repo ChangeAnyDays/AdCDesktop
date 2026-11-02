@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.5.2.0")]
+[assembly: AssemblyVersion("1.5.3.0")]
 
 namespace SpectrumControl
 {
@@ -875,8 +875,8 @@ namespace SpectrumControl
         private void RestoreDesktop()
         {
             MessageBoxResult answer = MessageBox.Show(Window,
-                "恢复原桌面会停止 Nexus 和频谱，并恢复安装前的桌面图标、任务栏和壁纸设置。\n\n是否继续？",
-                "恢复原桌面", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+                "恢复干净桌面会停止 Nexus 和频谱，保留壁纸和任务栏，并隐藏桌面图标。\n\n是否继续？",
+                "恢复干净桌面", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
             if (answer != MessageBoxResult.Yes) return;
             string script = Path.Combine(root, "Restore-Desktop.ps1");
             Button button = Find<Button>("RestoreDesktopButton");
@@ -890,7 +890,7 @@ namespace SpectrumControl
                 bool keepPanel = false;
                 try { keepPanel = File.ReadAllText(script).IndexOf("KeepPanel", StringComparison.OrdinalIgnoreCase) >= 0; } catch { }
                 ProcessStartInfo start = new ProcessStartInfo("powershell.exe",
-                    "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"" + script + "\" -InstallDir \"" + root + "\"" + (keepPanel ? " -KeepPanel" : ""));
+                    "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"" + script + "\" -InstallDir \"" + root + "\"" + (keepPanel ? " -KeepPanel" : "") + " -Clean");
                 start.UseShellExecute = false;
                 start.CreateNoWindow = true;
                 Process process = Process.Start(start);
