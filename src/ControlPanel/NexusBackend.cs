@@ -295,6 +295,12 @@ namespace SpectrumControl
             if (Running) throw new InvalidOperationException("请先从 Nexus 图标右键菜单退出 Nexus，再点击应用，避免正在运行的 Nexus 覆盖修改。应用后点击「启动 Nexus」。");
             if (restore) Settings.Restore(); else Settings.Apply(labels, tips);
         }
+        public bool EnsureRunning()
+        {
+            if (!integration || Running) return false;
+            Start(false);
+            return true;
+        }
         public void ApplyAppearance(NexusAppearancePreset preset)
         {
             if (!integration) throw new InvalidOperationException("测试模式不修改 Nexus 配置。");

@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.3.3.0")]
+[assembly: AssemblyVersion("1.3.4.0")]
 
 namespace SpectrumControl
 {
@@ -242,7 +242,29 @@ namespace SpectrumControl
                 Find<TextBox>("XValue").Text = Math.Max(0, (screenWidth - (int)Find<Slider>("WidthSlider").Value) / 2).ToString();
                 Find<TextBox>("YValue").Text = Math.Max(0, screenHeight - 140 - (int)Find<Slider>("HeightSlider").Value).ToString();
             };
-            Find<Button>("ApplyButton").Click += delegate { RunAction(delegate { backend.Apply(ReadEditors()); LoadSettings(backend.Read()); Feedback("已应用到桌面", false); }); };
+            Find<Button>("ApplyButton").Click += delegate
+            {
+                RunAction(delegate
+                {
+                    backend.Apply(ReadEditors());
+                    bool nexusStarted = false;
+                    try
+                    {
+                        backend.EnsureRunning();
+                        if (nexus.Executable != null) nexusStarted = nexus.EnsureRunning();
+                    }
+                    catch (Exception ex)
+                    {
+                        LoadSettings(backend.Read());
+                        RefreshNexusStatus();
+                        Feedback("频谱已应用，但启动桌面组件失败：" + ex.Message, true);
+                        return;
+                    }
+                    LoadSettings(backend.Read());
+                    RefreshNexusStatus();
+                    Feedback(nexusStarted ? "已应用到桌面，Nexus 已启动" : "已应用到桌面", false);
+                });
+            };
             Find<Button>("ReloadButton").Click += delegate { RunAction(delegate { LoadSettings(backend.Read()); Feedback("已重新读取桌面设置", false); }); };
             Find<Button>("RestoreButton").Click += delegate { RunAction(delegate { backend.RestoreOriginal(); LoadSettings(backend.Read()); Feedback("已恢复使用控制台前的设置", false); }); };
             Find<Button>("RestoreDesktopButton").Click += delegate { RestoreDesktop(); };
