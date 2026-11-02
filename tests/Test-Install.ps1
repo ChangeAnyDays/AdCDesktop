@@ -81,7 +81,7 @@ $fullManifestPath = Join-Path $fullTarget 'desktop-style.json'
 $fullManifest = Get-Content -LiteralPath $fullManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $privateProject = Join-Path $fullTarget 'Wallpaper\Dome\project.json'
 if ($fullManifest.mode -cne 'Full' -or $fullManifest.installRoot -ine [IO.Path]::GetFullPath($fullTarget)) { throw 'Full install did not preserve the Unicode/spaced installation path.' }
-if (!$fullManifest.appearance.hideDesktopIcons -or !$fullManifest.appearance.taskbarAutoHide) { throw 'Full manifest did not record its requested appearance.' }
+if (!$fullManifest.appearance.hideDesktopIcons -or $fullManifest.appearance.taskbarAutoHide) { throw 'Full manifest did not record its requested appearance.' }
 if ($fullManifest.wallpaper.enginePath -ine [IO.Path]::GetFullPath($enginePath) -or $fullManifest.wallpaper.projectPath -ine [IO.Path]::GetFullPath($privateProject)) { throw 'Full manifest did not point to the explicit engine and private wallpaper copy.' }
 if ($fullManifest.components.nexus -cne 'Nexus\Nexus.exe') { throw 'Full manifest lost its optional Nexus component.' }
 if ($includeTaskbar -and $fullManifest.components.translucenttb -cne 'TranslucentTB\TranslucentTB.exe') { throw 'Full manifest lost its optional taskbar component.' }
