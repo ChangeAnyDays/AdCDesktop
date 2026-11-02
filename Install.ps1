@@ -248,6 +248,7 @@ Get-ChildItem -LiteralPath $panelOutput -File | ForEach-Object { Copy-Item -Lite
 [void][IO.Directory]::CreateDirectory((Join-Path $InstallDir 'scripts'))
 foreach ($file in @('AdCDesktop.Common.psm1','DesktopShell.cs')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot ('scripts\' + $file)) -Destination (Join-Path $InstallDir ('scripts\' + $file)) -Force }
 foreach ($file in @('Start-Desktop.ps1','Restore-Desktop.ps1')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination (Join-Path $InstallDir $file) -Force }
+foreach ($file in @('Uninstall-AdCat.ps1','Uninstall.cmd')) { Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination (Join-Path $InstallDir $file) -Force }
 foreach ($name in @('Start-Desktop','Restore-Desktop')) { [IO.File]::WriteAllText((Join-Path $InstallDir ($name + '.cmd')), "@echo off`r`npowershell.exe -NoProfile -ExecutionPolicy Bypass -File `"%~dp0$name.ps1`" -InstallDir `"%~dp0.`" %*`r`nif errorlevel 1 pause`r`n", [Text.Encoding]::ASCII) }
 
 $engine = if ($Mode -eq 'Full' -and (!$Offline -or $WallpaperEnginePath)) { Find-WallpaperEngine $WallpaperEnginePath } else { $null }
@@ -324,13 +325,25 @@ if (!$NoShortcuts -and !$Offline) {
     if (![string]::IsNullOrWhiteSpace($programsRoot) -and (Test-Path -LiteralPath $programsRoot -PathType Container)) {
         $programsDir = Join-Path $programsRoot 'AdCat 桌面'
         [void][IO.Directory]::CreateDirectory($programsDir)
-        foreach ($item in @(@{Name='AdCat 桌面';Target=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe');Arguments=('--root "' + $InstallDir + '"')},@{Name='启动 AdCat 桌面';Target=(Join-Path $InstallDir 'Start-Desktop.cmd');Arguments=''},@{Name='恢复原桌面';Target=(Join-Path $InstallDir 'Restore-Desktop.cmd');Arguments=''})) {
+        foreach ($item in @(@{Name='AdCat 桌面';Target=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe');Arguments=('--root "' + $InstallDir + '"')},@{Name='启动 AdCat 桌面';Target=(Join-Path $InstallDir 'Start-Desktop.cmd');Arguments=''},@{Name='恢复原桌面';Target=(Join-Path $InstallDir 'Restore-Desktop.cmd');Arguments=''},@{Name='卸载 AdCat 桌面';Target=(Join-Path $InstallDir 'Uninstall.cmd');Arguments=''})) {
             $shortcutPath = Join-Path $programsDir ($item.Name + '.lnk')
             $shortcut = $shell.CreateShortcut($shortcutPath)
             $shortcut.TargetPath=$item.Target; $shortcut.Arguments=$item.Arguments; $shortcut.WorkingDirectory=$InstallDir
             $shortcut.IconLocation=(Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe') + ',0'
             $shortcut.Save()
         }
+        $panelExe = Join-Path $InstallDir 'SpectrumControl\AdCDesktop.exe'
+        $appVersion = if (Test-Path -LiteralPath $panelExe) { (Get-Item -LiteralPath $panelExe).VersionInfo.ProductVersion } else { '1.3.5' }
+        $uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\AdCatDesktop'
+        New-Item -Path $uninstallKey -Force | Out-Null
+        Set-ItemProperty -LiteralPath $uninstallKey -Name 'DisplayName' -Value 'AdCat 桌面'
+        Set-ItemProperty -LiteralPath $uninstallKey -Name 'DisplayVersion' -Value $appVersion
+        Set-ItemProperty -LiteralPath $uninstallKey -Name 'Publisher' -Value 'AdCat'
+        Set-ItemProperty -LiteralPath $uninstallKey -Name 'InstallLocation' -Value $InstallDir
+        Set-ItemProperty -LiteralPath $uninstallKey -Name 'DisplayIcon' -Value ($panelExe + ',0')
+        Set-ItemProperty -LiteralPath $uninstallKey -Name 'UninstallString' -Value ('cmd.exe /c ""' + (Join-Path $InstallDir 'Uninstall.cmd') + '""')
+        Set-ItemProperty -LiteralPath $uninstallKey -Name 'NoModify' -Value 1 -Type DWord
+        Set-ItemProperty -LiteralPath $uninstallKey -Name 'NoRepair' -Value 1 -Type DWord
     }
 }
 if ($Launch -and !$Offline) {

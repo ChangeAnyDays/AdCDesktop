@@ -1,4 +1,4 @@
-﻿<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="AdCat 桌面" Width="1160" Height="900" MinWidth="940" MinHeight="650"
@@ -138,6 +138,7 @@
       <Button x:Name="AppearanceTab" Style="{StaticResource NavButton}" Content="Nexus 外观" Margin="10,0,0,0" AutomationProperties.AutomationId="AppearanceTab"/>
       <Button x:Name="HelpButton" Content="上手教程" Margin="10,0,0,0" AutomationProperties.AutomationId="HelpButton"/>
       <Button x:Name="WindowsStartupButton" Content="系统启动项" Margin="10,0,0,0" AutomationProperties.AutomationId="WindowsStartupButton"/>
+      <Button x:Name="UninstallButton" Content="一键卸载" Margin="10,0,0,0" ToolTip="一键卸载 AdCat 桌面，并一起删除 Nexus、Rainmeter、频谱和安装目录" AutomationProperties.AutomationId="UninstallButton"/>
     </StackPanel>
     <Grid x:Name="SpectrumPage" Grid.Row="3">
       <Grid.ColumnDefinitions><ColumnDefinition Width="348"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.3.4.0")]
+[assembly: AssemblyVersion("1.3.5.0")]
 
 namespace SpectrumControl
 {
@@ -268,6 +268,7 @@ namespace SpectrumControl
             Find<Button>("ReloadButton").Click += delegate { RunAction(delegate { LoadSettings(backend.Read()); Feedback("已重新读取桌面设置", false); }); };
             Find<Button>("RestoreButton").Click += delegate { RunAction(delegate { backend.RestoreOriginal(); LoadSettings(backend.Read()); Feedback("已恢复使用控制台前的设置", false); }); };
             Find<Button>("RestoreDesktopButton").Click += delegate { RestoreDesktop(); };
+            Find<Button>("UninstallButton").Click += delegate { UninstallAdCat(); };
             Find<Button>("StartButton").Click += delegate { RunAction(delegate { backend.EnsureRunning(); RefreshStatus(); Feedback("组件已启动", false); }); };
             Find<Button>("SavePresetButton").Click += delegate { RunAction(delegate { SaveMyPreset(ReadEditors()); Feedback("已保存你的方案；桌面设置尚未改变", false); }); };
             Find<Button>("LoadPresetButton").Click += delegate { RunAction(delegate { StageSettings(LoadMyPreset()); MarkDirty(); Feedback("已载入你的方案，点击应用即可生效", false); }); };
@@ -861,6 +862,32 @@ namespace SpectrumControl
             {
                 button.IsEnabled = true;
                 Feedback("无法恢复原桌面：" + ex.Message, true);
+            }
+        }
+        private void UninstallAdCat()
+        {
+            MessageBoxResult answer = MessageBox.Show(Window,
+                "一键卸载会先恢复桌面，然后一起删除：\n\n• Nexus 和当前 Nexus 配置\n• Rainmeter、频谱和时钟皮肤\n• AdCat 控制台\n• 桌面/开始菜单快捷方式和自启动项\n• 整个安装目录\n\n是否继续？",
+                "卸载 AdCat 桌面", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+            if (answer != MessageBoxResult.Yes) return;
+            string script = Path.Combine(root, "Uninstall-AdCat.ps1");
+            if (!File.Exists(script))
+            {
+                Feedback("卸载脚本缺失，请使用 1.3.5 或更新版本的完整安装包。", true);
+                return;
+            }
+            try
+            {
+                ProcessStartInfo start = new ProcessStartInfo("powershell.exe",
+                    "-NoProfile -ExecutionPolicy Bypass -File \"" + script + "\" -InstallDir \"" + root + "\" -Confirmed");
+                start.UseShellExecute = true;
+                start.WorkingDirectory = root;
+                Process.Start(start);
+                Application.Current.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                Feedback("无法启动卸载器：" + ex.Message, true);
             }
         }
         private void WirePositionPreview()

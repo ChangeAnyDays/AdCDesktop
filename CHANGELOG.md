@@ -1,5 +1,12 @@
 ﻿# Changelog
 
+## 1.3.5
+
+- 新增完整卸载器：开始菜单“卸载 AdCat 桌面”和 Windows 设置中的卸载入口。
+- 卸载会先恢复桌面图标/任务栏/壁纸，再删除 Nexus、Rainmeter、频谱/时钟皮肤、控制台、快捷方式、自启动项和安装目录。
+- Nexus 优先调用官方卸载器；失败时继续清理安装目录并提示。
+- 安装包和更新包包含 `Uninstall.cmd` / `Uninstall-AdCat.ps1`。
+
 ## 1.3.4
 
 - 点击“应用到桌面”现在会同时确保 Rainmeter 和 Nexus 在运行；Nexus 未启动时自动启动，并在底部提示“Nexus 已启动”。
