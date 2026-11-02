@@ -8,8 +8,8 @@ using System.Windows.Forms;
 [assembly: AssemblyTitle("AdCat 桌面安装程序")]
 [assembly: AssemblyDescription("AdCat 桌面一键安装程序")]
 [assembly: AssemblyProduct("AdCat 桌面")]
-[assembly: AssemblyVersion("1.5.0.0")]
-[assembly: AssemblyFileVersion("1.5.0.0")]
+[assembly: AssemblyVersion("1.5.1.0")]
+[assembly: AssemblyFileVersion("1.5.1.0")]
 
 internal static class SetupLauncher
 {

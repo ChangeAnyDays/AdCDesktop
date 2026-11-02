@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## 1.5.1
+
+- AdCDesk 应用图标换成完整猫猫 + AdCDesk 字标（EXE、快捷方式、安装包统一）。
+- Nexus 设置保持当前配置，不重置 Dock 项或外观。
+- 任务栏可见、Dock 开关、一键卸载等功能保持。
+
 ## 1.5.0
 
 - 新增 Dock 开关：控制台 Nexus 页直接打开/关闭 Nexus Dock，停止 Dock 后任务栏保持可见。
