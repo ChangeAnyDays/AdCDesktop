@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.5.3.0")]
+[assembly: AssemblyVersion("1.5.4.0")]
 
 namespace SpectrumControl
 {
@@ -466,7 +466,7 @@ namespace SpectrumControl
         private void WireNexus()
         {
             LoadPresetImages();
-            Find<Button>("NexusStartButton").Click += delegate { NexusAction(delegate { nexus.ShowDock(); Find<TextBlock>("NexusDockFeedback").Text = "Nexus 已启动，Dock 已显示。"; NexusFeedback("Nexus 已启动，Dock 已显示", false); }); };
+            Find<Button>("NexusStartButton").Click += delegate { NexusAction(delegate { nexus.ShowDock(); TaskbarVisibility.HideDesktopIcons(); Find<TextBlock>("NexusDockFeedback").Text = "Nexus 已启动，Dock 已显示，桌面图标已隐藏。"; NexusFeedback("Nexus 已启动，桌面已清理", false); }); };
             Find<Button>("NexusSettingsButton").Click += delegate { NexusAction(delegate
             {
                 if (nexus.Running)
@@ -502,8 +502,9 @@ namespace SpectrumControl
                         try
                         {
                             System.Collections.Generic.List<string> labels = nexus.AddDockShortcuts(selected);
+                            TaskbarVisibility.HideDesktopIcons();
                             string summary = labels.Count == 1 ? labels[0] : String.Join("、", labels.ToArray());
-                            Find<TextBlock>("NexusDockFeedback").Text = "已加入 " + labels.Count + " 个应用到 Dock：" + summary + "。Nexus 已重启。";
+                            Find<TextBlock>("NexusDockFeedback").Text = "已加入 " + labels.Count + " 个应用到 Dock：" + summary + "。Nexus 已重启，桌面图标已隐藏。";
                             NexusFeedback("已加入 " + labels.Count + " 个应用到 Dock", false);
                         }
                         finally { Window.Cursor = null; }
@@ -518,8 +519,9 @@ namespace SpectrumControl
                     try
                     {
                         nexus.ShowDock();
-                        Find<TextBlock>("NexusDockFeedback").Text = "Dock 已设为屏幕底部并保持可见，Nexus 已重启。";
-                        NexusFeedback("Dock 已显示在屏幕底部", false);
+                        TaskbarVisibility.HideDesktopIcons();
+                        Find<TextBlock>("NexusDockFeedback").Text = "Dock 已设为屏幕底部并保持可见，Nexus 已重启，桌面图标已隐藏。";
+                        NexusFeedback("Dock 已显示，桌面已清理", false);
                     }
                     finally { Window.Cursor = null; }
                 });
@@ -574,7 +576,7 @@ namespace SpectrumControl
                 Window.Cursor = Cursors.Wait;
                 try
                 {
-                    if (enabled) nexus.ShowDock(); else nexus.StopDock();
+                    if (enabled) { nexus.ShowDock(); TaskbarVisibility.HideDesktopIcons(); } else nexus.StopDock();
                     Find<TextBlock>("NexusDockFeedback").Text = enabled ? "Dock 已启动。" : "Dock 已关闭，Nexus 已退出。";
                     NexusFeedback(enabled ? "Dock 已启动" : "Dock 已关闭", false);
                 }
@@ -875,8 +877,8 @@ namespace SpectrumControl
         private void RestoreDesktop()
         {
             MessageBoxResult answer = MessageBox.Show(Window,
-                "恢复干净桌面会停止 Nexus 和频谱，保留壁纸和任务栏，并隐藏桌面图标。\n\n是否继续？",
-                "恢复干净桌面", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+                "恢复原桌面会停止 Nexus 和频谱，并恢复安装前的桌面图标、任务栏和壁纸设置。\n\n是否继续？",
+                "恢复原桌面", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
             if (answer != MessageBoxResult.Yes) return;
             string script = Path.Combine(root, "Restore-Desktop.ps1");
             Button button = Find<Button>("RestoreDesktopButton");
@@ -890,7 +892,7 @@ namespace SpectrumControl
                 bool keepPanel = false;
                 try { keepPanel = File.ReadAllText(script).IndexOf("KeepPanel", StringComparison.OrdinalIgnoreCase) >= 0; } catch { }
                 ProcessStartInfo start = new ProcessStartInfo("powershell.exe",
-                    "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"" + script + "\" -InstallDir \"" + root + "\"" + (keepPanel ? " -KeepPanel" : "") + " -Clean");
+                    "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"" + script + "\" -InstallDir \"" + root + "\"" + (keepPanel ? " -KeepPanel" : ""));
                 start.UseShellExecute = false;
                 start.CreateNoWindow = true;
                 Process process = Process.Start(start);

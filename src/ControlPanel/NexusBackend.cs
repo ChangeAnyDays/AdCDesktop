@@ -511,6 +511,45 @@ namespace SpectrumControl
         private static extern IntPtr FindWindow(string className, string title);
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr window, int command);
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindowAsync(IntPtr window, int command);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string className, string title);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern int GetClassName(IntPtr window, StringBuilder name, int count);
+        [DllImport("user32.dll")]
+        private static extern bool EnumWindows(EnumCallback callback, IntPtr parameter);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr SendMessageTimeout(IntPtr window, uint message, IntPtr wParam, string lParam, uint flags, uint timeout, out IntPtr result);
+        private delegate bool EnumCallback(IntPtr window, IntPtr parameter);
+
+        public static void HideDesktopIcons() { SetDesktopIcons(false); }
+        public static void ShowDesktopIcons() { SetDesktopIcons(true); }
+        private static void SetDesktopIcons(bool visible)
+        {
+            using (RegistryKey key = Registry.CurrentUser.CreateSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"))
+            {
+                if (key != null) key.SetValue("HideIcons", visible ? 0 : 1, RegistryValueKind.DWord);
+            }
+            IntPtr result;
+            SendMessageTimeout(new IntPtr(0xffff), 0x001A, IntPtr.Zero, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", 2, 250, out result);
+            EnumWindows(delegate(IntPtr window, IntPtr parameter)
+            {
+                StringBuilder name = new StringBuilder(256);
+                GetClassName(window, name, name.Capacity);
+                if (name.ToString() == "Progman" || name.ToString() == "WorkerW")
+                {
+                    IntPtr view = FindWindowEx(window, IntPtr.Zero, "SHELLDLL_DefView", null);
+                    if (view != IntPtr.Zero)
+                    {
+                        ShowWindowAsync(view, visible ? 8 : 0);
+                        IntPtr list = FindWindowEx(view, IntPtr.Zero, "SysListView32", null);
+                        if (list != IntPtr.Zero) ShowWindowAsync(list, visible ? 8 : 0);
+                    }
+                }
+                return true;
+            }, IntPtr.Zero);
+        }
 
         public static void ShowTaskbar()
         {
