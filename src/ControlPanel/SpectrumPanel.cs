@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.5.1.0")]
+[assembly: AssemblyVersion("1.5.2.0")]
 
 namespace SpectrumControl
 {
@@ -466,7 +466,7 @@ namespace SpectrumControl
         private void WireNexus()
         {
             LoadPresetImages();
-            Find<Button>("NexusStartButton").Click += delegate { NexusAction(delegate { nexus.Start(false); NexusFeedback("已请求启动 Nexus。", false); }); };
+            Find<Button>("NexusStartButton").Click += delegate { NexusAction(delegate { nexus.ShowDock(); Find<TextBlock>("NexusDockFeedback").Text = "Nexus 已启动，Dock 已显示。"; NexusFeedback("Nexus 已启动，Dock 已显示", false); }); };
             Find<Button>("NexusSettingsButton").Click += delegate { NexusAction(delegate
             {
                 if (nexus.Running)
@@ -574,7 +574,7 @@ namespace SpectrumControl
                 Window.Cursor = Cursors.Wait;
                 try
                 {
-                    if (enabled) nexus.Start(false); else nexus.StopDock();
+                    if (enabled) nexus.ShowDock(); else nexus.StopDock();
                     Find<TextBlock>("NexusDockFeedback").Text = enabled ? "Dock 已启动。" : "Dock 已关闭，Nexus 已退出。";
                     NexusFeedback(enabled ? "Dock 已启动" : "Dock 已关闭", false);
                 }

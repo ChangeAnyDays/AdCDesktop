@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## 1.5.2
+
+- 修复恢复原桌面后点击“启动 Nexus”无效：现在该按钮会重启 Nexus 并强制显示 Dock。
+- Dock 开关打开时也走同一路径，避免 Nexus 核心进程在运行但 Dock 窗口隐藏。
+- Nexus 配置和 Dock 项不删除、不重置。
+
 ## 1.5.1
 
 - AdCDesk 应用图标换成完整猫猫 + AdCDesk 字标（EXE、快捷方式、安装包统一）。
