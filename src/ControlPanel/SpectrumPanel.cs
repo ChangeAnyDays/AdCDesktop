@@ -24,7 +24,7 @@ using Path = System.IO.Path;
 
 [assembly: AssemblyTitle("AdCat 桌面")]
 [assembly: AssemblyDescription("统一管理桌面频谱与 Nexus 启动栏")]
-[assembly: AssemblyVersion("1.5.4.0")]
+[assembly: AssemblyVersion("1.5.5.0")]
 
 namespace SpectrumControl
 {
@@ -170,8 +170,9 @@ namespace SpectrumControl
         private string previewGradientKey;
         private Canvas positionCanvas;
         private Border positionScreen, positionSpectrum;
+        private Image positionWallpaper;
         private TextBlock positionHint, positionReadout;
-        private bool draggingPosition;
+        private bool draggingPosition, positionWheelMode;
         private Point positionDragOffset;
         private double positionScale, positionOffsetX, positionOffsetY;
 
@@ -963,12 +964,15 @@ namespace SpectrumControl
             positionCanvas = Find<Canvas>("PositionCanvas");
             positionScreen = Find<Border>("PositionScreen");
             positionSpectrum = Find<Border>("PositionSpectrum");
+            positionWallpaper = Find<Image>("PositionWallpaper");
             positionHint = Find<TextBlock>("PositionHint");
             positionReadout = Find<TextBlock>("PositionReadout");
+            LoadPositionWallpaper();
             positionCanvas.SizeChanged += delegate { UpdatePositionPreview(); };
             positionSpectrum.MouseLeftButtonDown += PositionSpectrum_MouseLeftButtonDown;
             positionSpectrum.MouseMove += PositionSpectrum_MouseMove;
             positionSpectrum.MouseLeftButtonUp += PositionSpectrum_MouseLeftButtonUp;
+            positionSpectrum.MouseWheel += PositionSpectrum_MouseWheel;
             positionSpectrum.LostMouseCapture += delegate { draggingPosition = false; };
             UpdatePositionPreview();
         }
@@ -1006,12 +1010,45 @@ namespace SpectrumControl
             Canvas.SetLeft(positionReadout, Math.Max(8, cw - 150));
             Canvas.SetTop(positionReadout, 4);
         }
+        private void LoadPositionWallpaper()
+        {
+            try
+            {
+                string path = Microsoft.Win32.Registry.GetValue("HKEY_CURRENT_USER\\Control Panel\\Desktop", "WallPaper", null) as string;
+                if (String.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                    path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Web\\Wallpaper\\ThemeB\\img24.jpg");
+                if (!File.Exists(path)) return;
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.UriSource = new Uri(path, UriKind.Absolute);
+                image.EndInit();
+                image.Freeze();
+                positionWallpaper.Source = image;
+            }
+            catch { }
+        }
         private void PositionSpectrum_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (positionCanvas == null) return;
+            if (e.ClickCount == 2)
+            {
+                positionWheelMode = !positionWheelMode;
+                positionHint.Text = positionWheelMode ? "滚轮调宽度 · 再双击退出" : "桌面模拟：拖动频谱条 · 双击后滚轮调宽度";
+                e.Handled = true;
+                return;
+            }
             positionDragOffset = e.GetPosition(positionSpectrum);
             draggingPosition = true;
             positionSpectrum.CaptureMouse();
+            e.Handled = true;
+        }
+        private void PositionSpectrum_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (!positionWheelMode) return;
+            Slider width = Find<Slider>("WidthSlider");
+            width.Value = Math.Max(width.Minimum, Math.Min(width.Maximum, width.Value + (e.Delta > 0 ? 25 : -25)));
+            UpdatePositionPreview();
             e.Handled = true;
         }
         private void PositionSpectrum_MouseMove(object sender, MouseEventArgs e)

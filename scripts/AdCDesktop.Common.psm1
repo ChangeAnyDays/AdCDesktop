@@ -1,4 +1,4 @@
-﻿Set-StrictMode -Version 2
+Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
 function Get-ObjectValue {
@@ -87,18 +87,37 @@ function Get-VerifiedArchive {
         if ($url -notmatch '^https://') { throw 'Downloads must use HTTPS.' }
         [void][IO.Directory]::CreateDirectory($CacheDir)
         [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-        Write-Host "Downloading $name"
         $temporary = $path + '.download'
-        try {
-            $referer = [string](Get-ObjectValue $Dependency 'referer')
-            if ([string]::IsNullOrWhiteSpace($referer)) {
-                Invoke-WebRequest -Uri $url -OutFile $temporary -UseBasicParsing
-            } else {
-                Invoke-WebRequest -Uri $url -OutFile $temporary -UseBasicParsing -Headers @{ Referer = $referer } -UserAgent 'Mozilla/5.0'
+        $urls = @($url)
+        $fallback = [string](Get-ObjectValue $Dependency 'fallbackUrl')
+        if (![string]::IsNullOrWhiteSpace($fallback)) { $urls += $fallback }
+        $lastError = $null
+        $downloaded = $false
+        foreach ($candidate in $urls) {
+            if ($candidate -notmatch '^https://') { continue }
+            for ($attempt = 1; $attempt -le 2 -and !$downloaded; $attempt++) {
+                Write-Host ("Downloading {0} (attempt {1})" -f $name, $attempt)
+                try {
+                    $referer = [string](Get-ObjectValue $Dependency 'referer')
+                    if ([string]::IsNullOrWhiteSpace($referer)) {
+                        Invoke-WebRequest -Uri $candidate -OutFile $temporary -UseBasicParsing -TimeoutSec 120
+                    } else {
+                        Invoke-WebRequest -Uri $candidate -OutFile $temporary -UseBasicParsing -Headers @{ Referer = $referer } -UserAgent 'Mozilla/5.0' -TimeoutSec 120
+                    }
+                    if ((Get-FileHash -LiteralPath $temporary -Algorithm SHA256).Hash -ine $expected) { throw "SHA256 mismatch for $name; no installer was started." }
+                    Move-Item -LiteralPath $temporary -Destination $path -Force
+                    $downloaded = $true
+                } catch {
+                    $lastError = $_.Exception.Message
+                    if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary -Force }
+                    if ($candidate -eq $url) { Start-Sleep -Seconds 2 }
+                }
             }
-            if ((Get-FileHash -LiteralPath $temporary -Algorithm SHA256).Hash -ine $expected) { throw "SHA256 mismatch for $name; no installer was started." }
-            Move-Item -LiteralPath $temporary -Destination $path
-        } finally { if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary -Force } }
+            if ($downloaded) { break }
+        }
+        if (!$downloaded) {
+            throw ("Could not download {0} from the official URL or GitHub mirror. Last error: {1}" -f $name, $lastError)
+        }
     }
     if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -ine $expected) { throw "Cached dependency failed SHA256 verification: $name" }
     return $path
